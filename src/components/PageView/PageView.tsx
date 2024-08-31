@@ -1,5 +1,5 @@
 import { PageLoader } from "@/helpers/PageLoader";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
   pageLoader: PageLoader;
@@ -22,15 +22,22 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
     };
   }, [pageLoader, pageIndex]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
+      ref={containerRef}
       className="fixed top-0 left-0 w-screen h-screen overflow-auto bg-[#39322B]"
       onClick={() => onChangePage(1)}
       onWheel={(e) => {
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
           return;
         }
-        onChangePage(e.deltaY > 0 ? 1 : -1)
+        const container = containerRef.current!;
+        if (container.scrollHeight > container.clientHeight) {
+          return;
+        }
+        onChangePage(e.deltaY > 0 ? 1 : -1);
       }}>
       {(() => {
         switch (imageUrl) {
