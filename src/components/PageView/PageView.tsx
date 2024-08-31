@@ -28,7 +28,6 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
     <div
       ref={containerRef}
       className="fixed top-0 left-0 w-screen h-screen overflow-auto bg-[#39322B]"
-      onClick={() => onChangePage(1)}
       onWheel={(e) => {
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
           return;
@@ -50,6 +49,7 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
               className="w-full object-contain"
               style={{ height }}
               src={imageUrl}
+              onClick={() => onChangePage(1)}
             />;
         }
       })()}
