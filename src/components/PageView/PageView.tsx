@@ -24,7 +24,7 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
 
   return (
     <div
-      className="absolute top-0 left-0 w-screen"
+      className="absolute top-0 left-0 w-screen bg-[#39322B]"
       style={{ height }}
       onClick={() => onChangePage(1)}
       onWheel={(e) => {
