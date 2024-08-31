@@ -42,8 +42,11 @@ function ViewerInternal({ zip }: { zip: JSZip }) {
     loadPage();
   }, [pageIndex, pageLoader]);
 
+  const vh = useMemo(() => window.innerHeight, []);
+
   return imageUrl ? (
     <PageView
+      height={vh}
       imageUrl={imageUrl}
       onClick={() => {
         setPageIndex(pageIndex + 1);

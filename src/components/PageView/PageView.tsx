@@ -1,7 +1,12 @@
-export function PageView({ imageUrl, onClick }: { imageUrl: string, onClick: () => void }) {
+export function PageView({ imageUrl, onClick, height }: {
+  imageUrl: string;
+  onClick: () => void;
+  height: number;
+}) {
   return (
     <img
-      className="absolute top-0 left-0 h-dvh w-dvw object-contain"
+      className="absolute top-0 left-0 w-screen object-contain"
+      style={{ height }}
       src={imageUrl}
       onClick={onClick}
     />
