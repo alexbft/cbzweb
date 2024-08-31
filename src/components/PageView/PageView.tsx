@@ -46,7 +46,7 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
             return <div>Error loading page {pageIndex}</div>;
           default:
             return <img
-              className="w-full object-contain"
+              className="w-auto mx-auto"
               style={{ height }}
               src={imageUrl}
               onClick={() => onChangePage(1)}
