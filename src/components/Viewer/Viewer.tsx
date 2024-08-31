@@ -2,6 +2,7 @@ import JSZip from "jszip";
 import { useEffect, useMemo, useState } from "react";
 import { PageLoader } from "../../helpers/PageLoader";
 import { PageView } from "../PageView/PageView";
+import { get, set } from "idb-keyval";
 
 export function Viewer({ file }: { file: File }) {
   const [zip, setZip] = useState<JSZip | null>(null);
@@ -18,45 +19,50 @@ export function Viewer({ file }: { file: File }) {
     openZip();
   }, [file]);
 
+  const lastPageIndexKey = useMemo(() => ["lastPageIndex", file.name, file.size], [file]);
+
   return (
-    zip ? <ViewerInternal zip={zip} /> : <div>Loading...</div>
+    zip ? <ViewerInternal lastPageIndexKey={lastPageIndexKey} zip={zip} /> : <div>Loading...</div>
   );
 }
 
-function ViewerInternal({ zip }: { zip: JSZip }) {
+function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKey: IDBValidKey }) {
   const pageLoader = useMemo(() => {
     console.debug("initializing page loader");
     return new PageLoader(zip);
   }, [zip]);
 
-  const [pageIndex, setPageIndex] = useState(0);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    const loadPage = async () => {
-      setImageUrl(null);
-      const url = await pageLoader.getPage(pageIndex);
-      setImageUrl(url);
-    }
+    (async () => {
+      const lastPageIndex = await get<number>(lastPageIndexKey);
+      setPageIndex(lastPageIndex ?? 0);
+    })();
+  }, [lastPageIndexKey]);
 
-    loadPage();
-  }, [pageIndex, pageLoader]);
+  useEffect(() => {
+    if (pageIndex !== null) {
+      set(lastPageIndexKey, pageIndex);
+    }
+  }, [pageIndex, lastPageIndexKey]);
 
   const vh = useMemo(() => window.innerHeight, []);
 
   const handlePageChange = (delta: number) => {
-    const newPageIndex = pageIndex + delta;
+    const newPageIndex = pageIndex! + delta;
     if (newPageIndex < 0 || newPageIndex >= pageLoader.numPages) {
       return;
     }
     setPageIndex(newPageIndex);
   };
 
-  return imageUrl ? (
+  return pageIndex !== null ? (
     <PageView
       height={vh}
-      imageUrl={imageUrl}
+      pageLoader={pageLoader}
+      pageIndex={pageIndex}
       onChangePage={handlePageChange}
     />
-  ) : <div>{`Loading page ${pageIndex}...`}</div>;
+  ) : <div>'Loading...'</div>;
 }
