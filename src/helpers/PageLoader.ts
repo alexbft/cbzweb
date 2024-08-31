@@ -37,6 +37,10 @@ export class PageLoader {
     return this.lastPagePromise;
   }
 
+  get numPages(): number {
+    return this.pages.length;
+  }
+
   private getPageInternal(index: number): Promise<string | null> {
     console.debug("loading page", index);
     return this.zip.file(this.pages[index]?.name)?.async("blob")?.then((data) => {

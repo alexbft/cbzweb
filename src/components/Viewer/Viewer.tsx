@@ -44,13 +44,19 @@ function ViewerInternal({ zip }: { zip: JSZip }) {
 
   const vh = useMemo(() => window.innerHeight, []);
 
+  const handlePageChange = (delta: number) => {
+    const newPageIndex = pageIndex + delta;
+    if (newPageIndex < 0 || newPageIndex >= pageLoader.numPages) {
+      return;
+    }
+    setPageIndex(newPageIndex);
+  };
+
   return imageUrl ? (
     <PageView
       height={vh}
       imageUrl={imageUrl}
-      onClick={() => {
-        setPageIndex(pageIndex + 1);
-      }}
+      onChangePage={handlePageChange}
     />
   ) : <div>{`Loading page ${pageIndex}...`}</div>;
 }
