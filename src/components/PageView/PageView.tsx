@@ -24,8 +24,7 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
 
   return (
     <div
-      className="absolute top-0 left-0 w-screen bg-[#39322B]"
-      style={{ height }}
+      className="fixed top-0 left-0 w-screen h-screen overflow-auto bg-[#39322B]"
       onClick={() => onChangePage(1)}
       onWheel={(e) => {
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
@@ -41,7 +40,8 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
             return <div>Error loading page {pageIndex}</div>;
           default:
             return <img
-              className="size-full object-contain"
+              className="w-full object-contain"
+              style={{ height }}
               src={imageUrl}
             />;
         }

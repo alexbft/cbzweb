@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageLoader } from "../../helpers/PageLoader";
 import { PageView } from "../PageView/PageView";
 import { get, set } from "idb-keyval";
@@ -26,6 +26,10 @@ export function Viewer({ file }: { file: File }) {
   );
 }
 
+function calculateImageHeight() {
+  return window.innerHeight;
+}
+
 function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKey: IDBValidKey }) {
   const pageLoader = useMemo(() => {
     console.debug("initializing page loader");
@@ -47,7 +51,28 @@ function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKe
     }
   }, [pageIndex, lastPageIndexKey]);
 
-  const vh = useMemo(() => window.innerHeight, []);
+  const [vh, setVh] = useState(calculateImageHeight());
+  const prevDevicePixelRatio = useRef(0);
+
+  useEffect(() => {
+    function handleResize() {
+      const newDevicePixelRatio = window.devicePixelRatio;
+      if (newDevicePixelRatio === prevDevicePixelRatio.current) {
+        // This is a normal resize event.
+        setVh(calculateImageHeight());
+      } else {
+        // Keep image size if browser zoom changes, so the image is zoomed properly.
+        prevDevicePixelRatio.current = newDevicePixelRatio;
+      }
+    }
+
+    prevDevicePixelRatio.current = window.devicePixelRatio;
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    }
+  }, []);
 
   const handlePageChange = (delta: number) => {
     const newPageIndex = pageIndex! + delta;
