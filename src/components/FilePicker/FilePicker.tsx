@@ -2,7 +2,7 @@ export function FilePicker({ onFileChange }: { onFileChange: (file: File) => voi
   return (
     <input
       type="file"
-      accept=".png,.jpg,.jpeg"
+      accept=".cbz"
       onChange={(e) => {
         const file = e.target.files?.[0];
         if (file) {

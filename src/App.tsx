@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import './App.css';
 import { FilePicker } from './components/FilePicker/FilePicker';
+import { Viewer } from './components/Viewer/Viewer';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,7 +10,11 @@ function App() {
     <>
       <div className="max-w-3xl mx-auto flex flex-col gap-4 pt-8">
         <FilePicker onFileChange={setFile} />
-        {file && <img src={URL.createObjectURL(file)} alt="Preview" />}
+        {file &&
+          <Suspense fallback={<div>Loading...</div>}>
+            <Viewer file={file} />
+          </Suspense>
+        }
       </div>
     </>
   )
