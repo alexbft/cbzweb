@@ -12,6 +12,24 @@ export type PageInfo = {
   imageUrl: string;
 };
 
+const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".tiff", ".tif"];
+
+function comparePaths(pathA: string, pathB: string) {
+  const partsA = pathA.split("/");
+  const partsB = pathB.split("/");
+  for (let i = 0; i < Math.min(partsA.length, partsB.length); i++) {
+    const partA = partsA[i];
+    const partB = partsB[i];
+    if (partA < partB) {
+      return -1;
+    }
+    if (partA > partB) {
+      return 1;
+    }
+  }
+  return partsA.length - partsB.length;
+}
+
 export class PageLoader {
   private readonly pages: JSZip.JSZipObject[];
   private lastPageIndex = -1;
@@ -20,7 +38,8 @@ export class PageLoader {
   private nextPagePromise: Promise<PageInfo> | null = null;
 
   constructor(zip: JSZip) {
-    this.pages = Object.values(zip.files).filter(obj => !obj.dir);
+    this.pages = Object.values(zip.files).filter(obj => !obj.dir && allowedExtensions.some(ext => obj.name.endsWith(ext)));
+    this.pages.sort((a, b) => comparePaths(a.name, b.name));
   }
 
   getPage(index: number): Promise<PageInfo> {
@@ -46,6 +65,9 @@ export class PageLoader {
       this.nextPagePromise = this.getPageInternal(index + 1);
     }
     this.lastPageIndex = index;
+    if (this.lastPagePromise === null) {
+      throw new Error("Page not found");
+    }
     return this.lastPagePromise;
   }
 
@@ -53,15 +75,20 @@ export class PageLoader {
     return this.pages.length;
   }
 
-  private async getPageInternal(index: number): Promise<PageInfo> {
-    console.debug("loading page", index);
-    const page = this.pages[index];
-    if (!page) {
-      throw new Error("Page not found");
+  private getPageInternal(index: number): Promise<PageInfo> | null {
+    if (index < 0 || index >= this.pages.length) {
+      return null;
     }
-    const blob = await page.async("blob");
-    const url = URL.createObjectURL(blob);
-    console.debug("loaded page", index);
-    return { name: page.name, imageUrl: url };
+    console.debug("loading page", index);
+    return (async () => {
+      const page = this.pages[index];
+      if (!page) {
+        throw new Error("Page not found");
+      }
+      const blob = await page.async("blob");
+      const url = URL.createObjectURL(blob);
+      console.debug("loaded page", index);
+      return { name: page.name, imageUrl: url };
+    })();
   }
 }

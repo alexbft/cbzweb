@@ -130,5 +130,5 @@ function ViewerInternal({ zip, lastPageIndexKey, documentName, onClose }:
       onChangePage={handlePageChange}
       onClose={onClose}
     />
-  ) : <div>'Loading...'</div>;
+  ) : <div>Loading...</div>;
 }
