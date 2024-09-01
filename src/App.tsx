@@ -9,6 +9,7 @@ function App() {
   const handleClose = () => {
     setAutoLoadRecent(false);
     setFile(null);
+    document.title = "CBZ Web Viewer";
   }
 
   return (
