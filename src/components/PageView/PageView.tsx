@@ -75,7 +75,6 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
             className="w-auto h-full object-contain"
             src={pageInfo.imageUrl}
             alt={pageInfo.name}
-            title={pageInfo.name}
           />) : (
           <div className="h-full grid place-content-center" style={{ width: lastWidthRef.current }}>Loading page {pageIndex}...</div>
         )}
