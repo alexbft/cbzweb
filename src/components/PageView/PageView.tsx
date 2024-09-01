@@ -17,8 +17,10 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
     setPageInfo(null);
     pageLoader.getPage(pageIndex).then((pageInfo) => {
       if (!cancelled) {
-        containerRef.current?.scrollTo(0, 0);
         setPageInfo(pageInfo);
+        setTimeout(() => {
+          containerRef.current?.scrollTo(0, 0);
+        }, 0);
       }
     });
     return () => {
