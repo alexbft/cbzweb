@@ -3,12 +3,23 @@ import { get, set } from "idb-keyval";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 
-export function FilePicker({ onFileChange }: { onFileChange: (file: File) => void }) {
+export function FilePicker({ autoLoadRecent, onFileChange }: {
+  autoLoadRecent: boolean;
+  onFileChange: (file: File) => void;
+}) {
   const [lastFileHandle, setLastFileHandle] = useState<FileSystemFileHandle | null>(null);
 
   useEffect(() => {
     const loadLastFileHandle = async () => {
       const lastFileHandle = await get<FileSystemFileHandle>('lastFile');
+      if (lastFileHandle && autoLoadRecent) {
+        const havePermission = await lastFileHandle.queryPermission({ mode: 'read' });
+        if (havePermission === 'granted') {
+          const file = await lastFileHandle.getFile();
+          onFileChange(file);
+          return;
+        }
+      }
       setLastFileHandle(lastFileHandle ?? null);
     };
 

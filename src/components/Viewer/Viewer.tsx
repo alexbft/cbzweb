@@ -4,7 +4,7 @@ import { PageLoader } from "../../helpers/PageLoader";
 import { PageView } from "../PageView/PageView";
 import { get, set } from "idb-keyval";
 
-export function Viewer({ file }: { file: File }) {
+export function Viewer({ file, onClose }: { file: File, onClose: () => void }) {
   const [zip, setZip] = useState<JSZip | null>(null);
 
   useEffect(() => {
@@ -28,6 +28,7 @@ export function Viewer({ file }: { file: File }) {
         lastPageIndexKey={lastPageIndexKey}
         zip={zip}
         documentName={documentName}
+        onClose={onClose}
       />
       : <div>Loading...</div>
   );
@@ -37,11 +38,12 @@ function calculateImageHeight() {
   return window.innerHeight;
 }
 
-function ViewerInternal({ zip, lastPageIndexKey, documentName }:
+function ViewerInternal({ zip, lastPageIndexKey, documentName, onClose }:
   {
     zip: JSZip;
     lastPageIndexKey: IDBValidKey;
     documentName: string;
+    onClose: () => void;
   }) {
   const pageLoader = useMemo(() => {
     return new PageLoader(zip);
@@ -59,7 +61,7 @@ function ViewerInternal({ zip, lastPageIndexKey, documentName }:
   useEffect(() => {
     if (pageIndex !== null) {
       set(lastPageIndexKey, pageIndex);
-      document.title = `${documentName} [Page ${pageIndex + 1}/${pageLoader.numPages}] - CBZ Web Viewer`;
+      document.title = `[${pageIndex + 1}/${pageLoader.numPages}] ${documentName} - CBZ Web Viewer`;
     }
   }, [pageIndex, lastPageIndexKey]);
 
@@ -106,6 +108,10 @@ function ViewerInternal({ zip, lastPageIndexKey, documentName }:
           e.preventDefault();
           handlePageChange(1);
           break;
+        case "Escape":
+          e.preventDefault();
+          onClose();
+          break
       }
     }
 
@@ -122,6 +128,7 @@ function ViewerInternal({ zip, lastPageIndexKey, documentName }:
       pageLoader={pageLoader}
       pageIndex={pageIndex}
       onChangePage={handlePageChange}
+      onClose={onClose}
     />
   ) : <div>'Loading...'</div>;
 }

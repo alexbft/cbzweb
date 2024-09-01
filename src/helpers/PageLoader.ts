@@ -15,6 +15,7 @@ export type PageInfo = {
 export class PageLoader {
   private readonly pages: JSZip.JSZipObject[];
   private lastPageIndex = -1;
+  private prevPagePromise: Promise<PageInfo> | null = null;
   private lastPagePromise: Promise<PageInfo> | null = null;
   private nextPagePromise: Promise<PageInfo> | null = null;
 
@@ -27,12 +28,20 @@ export class PageLoader {
       return this.lastPagePromise;
     }
     if (index === this.lastPageIndex + 1 && this.nextPagePromise) {
-      this.lastPagePromise?.then(revokeObjectURL(this.lastPageIndex));
+      this.prevPagePromise?.then(revokeObjectURL(this.lastPageIndex - 1));
+      this.prevPagePromise = this.lastPagePromise;
       this.lastPagePromise = this.nextPagePromise;
       this.nextPagePromise = this.getPageInternal(index + 1);
+    } else if (index === this.lastPageIndex - 1 && this.prevPagePromise) {
+      this.nextPagePromise?.then(revokeObjectURL(this.lastPageIndex + 1));
+      this.nextPagePromise = this.lastPagePromise;
+      this.lastPagePromise = this.prevPagePromise;
+      this.prevPagePromise = this.getPageInternal(index - 1);
     } else {
+      this.prevPagePromise?.then(revokeObjectURL(this.lastPageIndex - 1));
       this.lastPagePromise?.then(revokeObjectURL(this.lastPageIndex));
       this.nextPagePromise?.then(revokeObjectURL(this.lastPageIndex + 1));
+      this.prevPagePromise = this.getPageInternal(index - 1);
       this.lastPagePromise = this.getPageInternal(index);
       this.nextPagePromise = this.getPageInternal(index + 1);
     }
