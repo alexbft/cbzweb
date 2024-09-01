@@ -1,4 +1,4 @@
-import { PageLoader } from "@/helpers/PageLoader";
+import { PageInfo, PageLoader } from "@/helpers/PageLoader";
 import { useEffect, useRef, useState } from "react";
 
 export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
@@ -7,14 +7,15 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
   onChangePage: (delta: number) => void;
   height: number;
 }) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [pageInfo, setPageInfo] = useState<PageInfo | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setImageUrl(null);
-    pageLoader.getPage(pageIndex).then((url) => {
+    setPageInfo(null);
+    pageLoader.getPage(pageIndex).then((pageInfo) => {
       if (!cancelled) {
-        setImageUrl(url ?? '!ERROR');
+        containerRef.current?.scrollTo(0, 0);
+        setPageInfo(pageInfo);
       }
     });
     return () => {
@@ -38,21 +39,16 @@ export function PageView({ pageLoader, pageIndex, onChangePage, height }: {
         }
         onChangePage(e.deltaY > 0 ? 1 : -1);
       }}>
-      {(() => {
-        switch (imageUrl) {
-          case null:
-            return <div>Loading page {pageIndex}...</div>;
-          case '!ERROR':
-            return <div>Error loading page {pageIndex}</div>;
-          default:
-            return <img
-              className="w-auto mx-auto"
-              style={{ height }}
-              src={imageUrl}
-              onClick={() => onChangePage(1)}
-            />;
-        }
-      })()}
+      {pageInfo ? (
+        <img
+          className="w-auto mx-auto object-contain"
+          style={{ height }}
+          src={pageInfo.imageUrl}
+          alt={pageInfo.name}
+          onClick={() => onChangePage(1)}
+        />) : (
+        <div>Loading page {pageIndex}...</div>
+      )}
     </div>
   );
 }

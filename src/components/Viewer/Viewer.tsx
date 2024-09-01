@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageLoader } from "../../helpers/PageLoader";
 import { PageView } from "../PageView/PageView";
 import { get, set } from "idb-keyval";
@@ -20,9 +20,16 @@ export function Viewer({ file }: { file: File }) {
   }, [file]);
 
   const lastPageIndexKey = useMemo(() => ["lastPageIndex", file.name, file.size], [file]);
+  const documentName = file.name.replace(/\.cbz$/i, "");
 
   return (
-    zip ? <ViewerInternal lastPageIndexKey={lastPageIndexKey} zip={zip} /> : <div>Loading...</div>
+    zip ?
+      <ViewerInternal
+        lastPageIndexKey={lastPageIndexKey}
+        zip={zip}
+        documentName={documentName}
+      />
+      : <div>Loading...</div>
   );
 }
 
@@ -30,9 +37,13 @@ function calculateImageHeight() {
   return window.innerHeight;
 }
 
-function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKey: IDBValidKey }) {
+function ViewerInternal({ zip, lastPageIndexKey, documentName }:
+  {
+    zip: JSZip;
+    lastPageIndexKey: IDBValidKey;
+    documentName: string;
+  }) {
   const pageLoader = useMemo(() => {
-    console.debug("initializing page loader");
     return new PageLoader(zip);
   }, [zip]);
 
@@ -48,6 +59,7 @@ function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKe
   useEffect(() => {
     if (pageIndex !== null) {
       set(lastPageIndexKey, pageIndex);
+      document.title = `${documentName} [Page ${pageIndex + 1}/${pageLoader.numPages}] - CBZ Web Viewer`;
     }
   }, [pageIndex, lastPageIndexKey]);
 
@@ -74,13 +86,35 @@ function ViewerInternal({ zip, lastPageIndexKey }: { zip: JSZip; lastPageIndexKe
     }
   }, []);
 
-  const handlePageChange = (delta: number) => {
+  const handlePageChange = useCallback((delta: number) => {
     const newPageIndex = pageIndex! + delta;
     if (newPageIndex < 0 || newPageIndex >= pageLoader.numPages) {
       return;
     }
     setPageIndex(newPageIndex);
-  };
+  }, [pageIndex, pageLoader]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        case "PageUp":
+          e.preventDefault();
+          handlePageChange(-1);
+          break;
+        case "PageDown":
+        case "Space":
+          e.preventDefault();
+          handlePageChange(1);
+          break;
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [pageIndex, pageLoader]);
 
   return pageIndex !== null ? (
     <PageView

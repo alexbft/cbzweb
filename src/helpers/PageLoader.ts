@@ -2,24 +2,27 @@ import JSZip from "jszip";
 
 function revokeObjectURL(pageIndex: number) {
   console.debug("revoking object URL", pageIndex);
-  return (url: string | null) => {
-    if (url) {
-      URL.revokeObjectURL(url);
-    }
+  return (info: PageInfo) => {
+    URL.revokeObjectURL(info.imageUrl);
   };
 }
+
+export type PageInfo = {
+  name: string;
+  imageUrl: string;
+};
 
 export class PageLoader {
   private readonly pages: JSZip.JSZipObject[];
   private lastPageIndex = -1;
-  private lastPagePromise: Promise<string | null> | null = null;
-  private nextPagePromise: Promise<string | null> | null = null;
+  private lastPagePromise: Promise<PageInfo> | null = null;
+  private nextPagePromise: Promise<PageInfo> | null = null;
 
-  constructor(private readonly zip: JSZip) {
+  constructor(zip: JSZip) {
     this.pages = Object.values(zip.files).filter(obj => !obj.dir);
   }
 
-  getPage(index: number): Promise<string | null> {
+  getPage(index: number): Promise<PageInfo> {
     if (index === this.lastPageIndex && this.lastPagePromise) {
       return this.lastPagePromise;
     }
@@ -41,12 +44,15 @@ export class PageLoader {
     return this.pages.length;
   }
 
-  private getPageInternal(index: number): Promise<string | null> {
+  private async getPageInternal(index: number): Promise<PageInfo> {
     console.debug("loading page", index);
-    return this.zip.file(this.pages[index]?.name)?.async("blob")?.then((data) => {
-      const url = URL.createObjectURL(data);
-      console.debug("loaded page", index);
-      return url;
-    }) ?? Promise.resolve(null);
+    const page = this.pages[index];
+    if (!page) {
+      throw new Error("Page not found");
+    }
+    const blob = await page.async("blob");
+    const url = URL.createObjectURL(blob);
+    console.debug("loaded page", index);
+    return { name: page.name, imageUrl: url };
   }
 }
