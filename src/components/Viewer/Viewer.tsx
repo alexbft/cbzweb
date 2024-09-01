@@ -102,7 +102,7 @@ function ViewerInternal({ zip, lastPageIndexKey, documentName }:
           handlePageChange(-1);
           break;
         case "PageDown":
-        case "Space":
+        case " ":
           e.preventDefault();
           handlePageChange(1);
           break;
