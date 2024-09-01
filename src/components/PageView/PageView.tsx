@@ -50,7 +50,7 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
         }
         onChangePage(e.deltaY > 0 ? 1 : -1);
       }}>
-      <div className="absolute top-0 left-0 w-full h-full z-[1] pointer-events-none *:pointer-events-auto">
+      <div className="fixed top-0 left-0 w-full h-full z-[1] pointer-events-none *:pointer-events-auto">
         <Button
           className="absolute top-4 right-4 group size-16 hover:bg-black hover:bg-opacity-25 rounded-full"
           variant="ghost"
