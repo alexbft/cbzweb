@@ -1,5 +1,5 @@
 import { PageInfo, PageLoader } from "@/helpers/PageLoader";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Cross2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 
@@ -35,6 +35,14 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
   useEffect(() => {
     lastWidthRef.current = imageRef.current?.clientWidth ?? 0;
   });
+
+  const toggleFullScreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      return;
+    }
+    containerRef.current?.requestFullscreen();
+  }, []);
 
   return (
     <div
@@ -77,6 +85,8 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
             className="w-auto h-full object-contain"
             src={pageInfo.imageUrl}
             alt={pageInfo.name}
+            onDoubleClick={toggleFullScreen}
+
           />) : (
           <div className="h-full grid place-content-center" style={{ width: lastWidthRef.current }}>Loading page {pageIndex}...</div>
         )}
