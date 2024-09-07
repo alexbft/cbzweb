@@ -15,7 +15,7 @@ export function TableOfContents({ items, onClick }: { items: EpubManifestItem[];
         <TableOfContentsIcon className="text-white opacity-30 group-hover:opacity-100 size-8" />
       </Button>
       {isOpen && (
-        <div className="bg-black bg-opacity-95 p-4 rounded-lg">
+        <div className="bg-black bg-opacity-95 p-4 rounded-lg max-h-[75vh] overflow-y-auto">
           <ul>
             {items.map((item) => (
               <li key={item.id}>
