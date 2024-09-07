@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FilePicker } from './components/FilePicker/FilePicker';
 import { Viewer } from './components/Viewer/Viewer';
+import { setDefaultTitle } from './helpers/setTitle';
 
 function App() {
   const [autoLoadRecent, setAutoLoadRecent] = useState(true);
@@ -9,15 +10,13 @@ function App() {
   const handleClose = () => {
     setAutoLoadRecent(false);
     setFile(null);
-    document.title = "CBZ Web Viewer";
-  }
+    setDefaultTitle();
+  };
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4 pt-8">
-      {file ?
-        <Viewer file={file} onClose={handleClose} />
-        : <FilePicker autoLoadRecent={autoLoadRecent} onFileChange={setFile} />}
-    </div>
+    file ?
+      <Viewer file={file} onClose={handleClose} />
+      : <FilePicker autoLoadRecent={autoLoadRecent} onFileChange={setFile} />
   );
 }
 
