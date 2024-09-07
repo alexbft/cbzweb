@@ -2,8 +2,14 @@
   html {
     color: white;
     font-family: sans-serif;
-    font-size: 20px;
     line-height: 1.5;
+    font-size: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 20px;
+    }
   }
 
   body {
@@ -38,7 +44,7 @@
     section:has(p),
     body:has(>p),
     nav {
-      padding: 0 16px;
+      padding: 0 8px;
     }
   }
 }
