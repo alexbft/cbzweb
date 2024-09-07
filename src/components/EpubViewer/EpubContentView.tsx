@@ -35,7 +35,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const scrollToPage = useCallback((href: string, pushState = true) => {
+  const scrollToHref = useCallback((href: string, pushState = true) => {
     const currentScrollTop = iframeRef.current!.contentDocument!.documentElement.scrollTop;
     const maybePushState = () => {
       if (pushState) {
@@ -124,7 +124,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
           if (url.origin === window.location.origin) {
             e.preventDefault();
             e.stopPropagation();
-            scrollToPage(url.hash.substring("#book/".length));
+            scrollToHref(url.hash.substring("#book/".length));
           }
         }
       });
@@ -206,7 +206,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
   useEffect(() => {
     function handlePopState(e: PopStateEvent) {
       if (e.state?.href) {
-        scrollToPage(e.state.href, false);
+        scrollToHref(e.state.href, false);
       }
       if (e.state?.scrollTop != null) {
         const iframe = iframeRef.current;
@@ -225,7 +225,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
 
   return (
     <>
-      <TableOfContents items={content.toc} onClick={scrollToPage} />
+      <TableOfContents items={content.toc} onClick={scrollToHref} />
 
       <iframe
         ref={iframeRef}
