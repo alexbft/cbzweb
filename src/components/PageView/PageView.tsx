@@ -15,9 +15,15 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
 
   useEffect(() => {
     let cancelled = false;
-    setPageInfo(null);
+    let success = false;
+    setTimeout(() => {
+      if (!success) {
+        setPageInfo(null);
+      }
+    }, 0);
     pageLoader.getPage(pageIndex).then((pageInfo) => {
       if (!cancelled) {
+        success = true;
         setPageInfo(pageInfo);
         setTimeout(() => {
           containerRef.current?.scrollTo(0, 0);

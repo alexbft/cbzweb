@@ -55,7 +55,22 @@ export class EpubContent {
       if (path != null) {
         const imageItem = this.resolveItemByRelativePath(item.href, path);
         if (imageItem) {
-          resolveTasks.push(this.setImageSrc(image, imageItem));
+          resolveTasks.push(this.getObjectUrl(imageItem).then(url => {
+            image.setAttribute("src", url);
+          }));
+        }
+      }
+    }
+
+    const svgImages = pageDocument.querySelectorAll("image");
+    for (const image of svgImages) {
+      const path = image.getAttribute("xlink:href");
+      if (path != null) {
+        const imageItem = this.resolveItemByRelativePath(item.href, path);
+        if (imageItem) {
+          resolveTasks.push(this.getObjectUrl(imageItem).then(url => {
+            image.setAttribute("xlink:href", url);
+          }));
         }
       }
     }
@@ -66,7 +81,9 @@ export class EpubContent {
       if (path != null) {
         const cssItem = this.resolveItemByRelativePath(item.href, path);
         if (cssItem) {
-          resolveTasks.push(this.setLinkHref(link as HTMLLinkElement, cssItem));
+          resolveTasks.push(this.getObjectUrl(cssItem).then(url => {
+            link.setAttribute("href", url);
+          }));
         }
       }
     }
@@ -119,14 +136,6 @@ export class EpubContent {
     let endPath = relativePath.split("#", 2)[0];
     const resolvedPath = resolvePath(dirName(basePath), endPath);
     return this.itemByHref.get(resolvedPath);
-  }
-
-  private async setImageSrc(image: HTMLImageElement, item: EpubManifestItem) {
-    image.src = await this.getObjectUrl(item);
-  }
-
-  private async setLinkHref(link: HTMLLinkElement, item: EpubManifestItem) {
-    link.href = await this.getObjectUrl(item);
   }
 
   dispose() {
