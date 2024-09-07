@@ -29,7 +29,7 @@ export function FilePicker({ autoLoadRecent, onFileChange }: {
   const handleOpenFile = useCallback(async () => {
     try {
       const file = await fileOpen({
-        extensions: [".cbz"],
+        extensions: [".cbz", ".epub"],
       });
       if (file?.handle) {
         set('lastFile', file.handle);
@@ -61,9 +61,9 @@ export function FilePicker({ autoLoadRecent, onFileChange }: {
   }, [lastFileHandle]);
 
   return (
-    <>
+    <main className="max-w-3xl mx-auto flex flex-col gap-4 pt-8">
       <div>
-        <Button onClick={handleOpenFile}>Open CBZ file...</Button>
+        <Button onClick={handleOpenFile}>Open file...</Button>
       </div>
       {lastFileHandle && (
         <div>
@@ -72,6 +72,6 @@ export function FilePicker({ autoLoadRecent, onFileChange }: {
           </Button>
         </div>
       )}
-    </>
+    </main>
   );
 }
