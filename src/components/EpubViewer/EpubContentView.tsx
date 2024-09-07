@@ -1,11 +1,12 @@
 import { EpubContent } from "@/helpers/EpubContent";
 import { EpubPage } from "@/helpers/EpubPage";
-import { useCallback, useEffect, useRef } from "react";
-
-import bookHtml from "./bookIndex.html?raw";
-import bookCss from "./book.css?inline";
 import { setTitle } from "@/helpers/setTitle";
 import { get, set } from "idb-keyval";
+import { useCallback, useEffect, useRef } from "react";
+
+import bookCss from "./book.css?inline";
+import bookHtml from "./bookIndex.html?raw";
+import { TableOfContents } from "./TableOfContents";
 
 function waitUntilLoaded(iframe: HTMLIFrameElement) {
   return new Promise<void>((resolve) => {
@@ -32,6 +33,10 @@ export function EpubContentView({ content, lastPageIndexKey }: {
       pageContainer.scrollIntoView();
     }
   }, []);
+
+  const onClickTocItem = useCallback((href: string) => {
+    scrollToPage(`book/${href}`);
+  }, [scrollToPage]);
 
   const handleIntersection = useCallback((pageTitle: string) => (
     (entries: IntersectionObserverEntry[]) => {
@@ -92,6 +97,12 @@ export function EpubContentView({ content, lastPageIndexKey }: {
             e.preventDefault();
             scrollToPage(url.hash.substring(1));
           }
+        }
+      });
+      shadowRoot.addEventListener("dblclick", (e) => {
+        if (e.target instanceof HTMLImageElement) {
+          e.preventDefault();
+          window.open(e.target.src, "_blank");
         }
       });
       const style = contentDocument.createElement("style");
@@ -164,11 +175,15 @@ export function EpubContentView({ content, lastPageIndexKey }: {
   }, [content]);
 
   return (
-    <iframe
-      ref={iframeRef}
-      className="w-full h-full"
-      sandbox="allow-same-origin allow-top-navigation-by-user-activation"
-      src="about:blank"
-    />
+    <>
+      <TableOfContents items={content.toc} onClick={onClickTocItem} />
+
+      <iframe
+        ref={iframeRef}
+        className="w-full h-full"
+        sandbox="allow-same-origin allow-top-navigation-by-user-activation"
+        src="about:blank"
+      />
+    </>
   );
 }

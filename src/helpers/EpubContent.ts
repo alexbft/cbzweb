@@ -7,17 +7,21 @@ export type EpubContentOptions = {
   title: string;
   manifestItems: EpubManifestItem[];
   readingOrder: string[];
+  tocItemIds: string[];
 };
 
 export class EpubContent {
   private readonly itemById = new Map<string, EpubManifestItem>();
   private readonly itemByHref = new Map<string, EpubManifestItem>();
+  private readonly objectUrlCache = new Map<string, string>();
 
   private readonly readingOrder: string[];
+  private readonly tocItemIds: string[];
   public readonly title: string;
 
-  constructor({ manifestItems, readingOrder, title }: EpubContentOptions) {
+  constructor({ manifestItems, readingOrder, title, tocItemIds }: EpubContentOptions) {
     this.readingOrder = readingOrder;
+    this.tocItemIds = tocItemIds;
     this.title = title;
     for (const item of manifestItems) {
       this.itemById.set(item.id, item);
@@ -89,10 +93,26 @@ export class EpubContent {
     } satisfies EpubPage;
   }
 
+  get toc() {
+    return this.tocItemIds
+      .map(id => this.itemById.get(id))
+      .filter(Boolean) as EpubManifestItem[];
+  }
+
   private async getObjectUrl(item: EpubManifestItem) {
+    let cachedUrl = this.objectUrlCache.get(item.id);
+    if (cachedUrl) {
+      return cachedUrl;
+    }
     const blob = await item.zipEntry.async("blob");
+    cachedUrl = this.objectUrlCache.get(item.id);
+    if (cachedUrl) {
+      return cachedUrl;
+    }
     const typedBlob = new Blob([blob], { type: item.mediaType });
-    return URL.createObjectURL(typedBlob);
+    const url = URL.createObjectURL(typedBlob);
+    this.objectUrlCache.set(item.id, url);
+    return url;
   }
 
   private resolveItemByRelativePath(basePath: string, relativePath: string) {
@@ -109,5 +129,9 @@ export class EpubContent {
     link.href = await this.getObjectUrl(item);
   }
 
-  dispose() { }
+  dispose() {
+    for (const url of this.objectUrlCache.values()) {
+      URL.revokeObjectURL(url);
+    }
+  }
 }

@@ -50,15 +50,17 @@ export async function loadEpub(zip: JSZip) {
   const navPoints = nodeToArray(tocXml.ncx.navMap.navPoint);
   const manifestItemById = new Map(manifestItems.map(item => [item.id, item]));
   const manifestItemByHref = new Map(manifestItems.map(item => [item.href, item]));
+  const tocItemIds: string[] = [];
   for (const navPoint of navPoints) {
-    const navLabel = navPoint.navLabel.text;
-    if (typeof navLabel !== "string") {
-      continue;
-    }
     const relativePath = navPoint.content["@_src"] as string;
     const href = resolvePath(dirName(tocItem.href), relativePath);
     const manifestItem = manifestItemByHref.get(href);
     if (manifestItem) {
+      tocItemIds.push(manifestItem.id);
+      const navLabel = navPoint.navLabel.text;
+      if (typeof navLabel !== "string") {
+        continue;
+      }
       manifestItem.title = navLabel;
     }
   }
@@ -73,5 +75,5 @@ export async function loadEpub(zip: JSZip) {
       }
     }
   }
-  return new EpubContent({ manifestItems, readingOrder, title: bookTitle });
+  return new EpubContent({ manifestItems, readingOrder, title: bookTitle, tocItemIds });
 }

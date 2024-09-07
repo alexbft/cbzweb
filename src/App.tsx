@@ -11,7 +11,7 @@ function App() {
     setAutoLoadRecent(false);
     setFile(null);
     setDefaultTitle();
-  }
+  };
 
   return (
     file ?
