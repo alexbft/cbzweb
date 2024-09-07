@@ -90,7 +90,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
       idleCallback = window.requestIdleCallback(() => {
         idleCallback = null;
         set(lastPageIndexKey, scrollTop);
-      }, { timeout: 10000 });
+      }, { timeout: 1000 });
     };
   }, [lastPageIndexKey]);
 
