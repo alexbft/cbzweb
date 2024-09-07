@@ -89,6 +89,12 @@ export class EpubContent {
     } satisfies EpubPage;
   }
 
+  private async getObjectUrl(item: EpubManifestItem) {
+    const blob = await item.zipEntry.async("blob");
+    const typedBlob = new Blob([blob], { type: item.mediaType });
+    return URL.createObjectURL(typedBlob);
+  }
+
   private resolveItemByRelativePath(basePath: string, relativePath: string) {
     let endPath = relativePath.split("#", 2)[0];
     const resolvedPath = resolvePath(dirName(basePath), endPath);
@@ -96,15 +102,11 @@ export class EpubContent {
   }
 
   private async setImageSrc(image: HTMLImageElement, item: EpubManifestItem) {
-    const blob = await item.zipEntry.async("blob");
-    const url = URL.createObjectURL(blob);
-    image.src = url;
+    image.src = await this.getObjectUrl(item);
   }
 
   private async setLinkHref(link: HTMLLinkElement, item: EpubManifestItem) {
-    const blob = await item.zipEntry.async("blob");
-    const url = URL.createObjectURL(blob);
-    link.href = url;
+    link.href = await this.getObjectUrl(item);
   }
 
   dispose() { }

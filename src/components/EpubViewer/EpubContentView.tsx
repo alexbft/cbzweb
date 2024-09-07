@@ -37,7 +37,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
     (entries: IntersectionObserverEntry[]) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          setTitle(`${pageTitle} — ${content.title}`);
+          setTitle(`${content.title} — ${pageTitle}`);
         }
       }
     }
@@ -71,12 +71,16 @@ export function EpubContentView({ content, lastPageIndexKey }: {
       }
     }
 
-    function addPage(page: EpubPage) {
+    function addPage(page: EpubPage, isFirstPage = false) {
       const iframe = iframeRef.current;
       if (!iframe) {
         return;
       }
       const contentDocument = iframe.contentDocument!;
+      if (!isFirstPage) {
+        const hr = contentDocument.createElement("hr");
+        contentDocument.body.appendChild(hr);
+      }
       const pageContainer = contentDocument.createElement("div");
       pageContainer.id = `book/${page.href}`;
       pageContainer.className = "page";
@@ -128,11 +132,14 @@ export function EpubContentView({ content, lastPageIndexKey }: {
         iframe.srcdoc = bookHtml;
         await waitUntilLoaded(iframe);
         iframe.contentDocument!.addEventListener("scrollend", scrollHandler);
+
+        let isFirstPage = true;
         for await (const page of pagesGenerator()) {
           if (isCancelled) {
             return;
           }
-          addPage(page);
+          addPage(page, isFirstPage);
+          isFirstPage = false;
           if (!scrollRestored && prevScrollTop !== null) {
             scrollRestored = restoreScroll(prevScrollTop);
           }

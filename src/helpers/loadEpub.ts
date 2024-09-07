@@ -12,7 +12,7 @@ export async function loadEpub(zip: JSZip) {
   if (!containerXmlText) {
     throw new Error("container.xml not found");
   }
-  const xmlParser = new XMLParser({ ignoreAttributes: false });
+  const xmlParser = new XMLParser({ ignoreAttributes: false, removeNSPrefix: true });
   const containerXml = xmlParser.parse(containerXmlText, true);
   const rootPath = containerXml.container.rootfiles.rootfile["@_full-path"] as string;
   const rootXmlText = await zip.file(rootPath)?.async("text");
@@ -21,6 +21,7 @@ export async function loadEpub(zip: JSZip) {
   }
   const basePath = dirName(rootPath);
   const rootXml = xmlParser.parse(rootXmlText, true);
+  const bookTitle = rootXml.package.metadata.title.toString();
   const manifestItems = nodeToArray<EpubManifestItemNode>(rootXml.package.manifest.item).map(node => {
     const href = resolvePath(basePath, node["@_href"]);
     const zipEntry = zip.file(href);
@@ -46,10 +47,6 @@ export async function loadEpub(zip: JSZip) {
     throw new Error("TOC file not found");
   }
   const tocXml = xmlParser.parse(tocXmlText, true);
-  let bookTitle = tocXml.ncx.docTitle.text;
-  if (typeof bookTitle !== "string") {
-    bookTitle = zip.name;
-  }
   const navPoints = nodeToArray(tocXml.ncx.navMap.navPoint);
   const manifestItemById = new Map(manifestItems.map(item => [item.id, item]));
   const manifestItemByHref = new Map(manifestItems.map(item => [item.href, item]));
