@@ -28,7 +28,10 @@ export function Viewer({ file, onClose }: { file: File, onClose: () => void }) {
   const isEpub = file.name.toLowerCase().endsWith(".epub");
 
   if (isEpub) {
-    return <EpubViewer zip={zip} onClose={onClose} />;
+    return <EpubViewer
+      lastPageIndexKey={lastPageIndexKey}
+      zip={zip}
+      onClose={onClose} />;
   }
 
   return (
