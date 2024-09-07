@@ -90,12 +90,18 @@ export class EpubContent {
 
     const links = pageDocument.querySelectorAll("a");
     for (const link of links) {
-      link.setAttribute("target", "_parent");
       const path = link.getAttribute("href");
       if (path != null) {
         const linkTo = this.resolveItemByRelativePath(item.href, path);
         if (linkTo) {
-          link.setAttribute("href", `#book/${linkTo.href}`);
+          const parts = path.split("#", 2);
+          let href = `#book/${linkTo.href}`;
+          if (parts.length === 2) {
+            href += `#${parts[1]}`;
+          }
+          link.setAttribute("href", href);
+        } else {
+          link.setAttribute("target", "_parent");
         }
       }
     }

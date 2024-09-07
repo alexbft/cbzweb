@@ -25,22 +25,18 @@
   @media (min-width: 832px) {
 
     section:has(p),
+    body:has(>p),
     nav {
       max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    p {
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
+      margin-left: auto !important;
+      margin-right: auto !important;
     }
   }
 
   @media not (min-width: 832px) {
 
     section:has(p),
+    body:has(>p),
     nav {
       padding: 0 16px;
     }

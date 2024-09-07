@@ -16,27 +16,54 @@ function waitUntilLoaded(iframe: HTMLIFrameElement) {
   });
 }
 
+function findAnchor(target: unknown): HTMLAnchorElement | null {
+  if (target == null || typeof target !== 'object') {
+    return null;
+  }
+  if ('tagName' in target && target.tagName === 'A') {
+    return target as HTMLAnchorElement;
+  }
+  if ('parentElement' in target) {
+    return findAnchor(target.parentElement);
+  }
+  return null;
+}
+
 export function EpubContentView({ content, lastPageIndexKey }: {
   content: EpubContent;
   lastPageIndexKey: IDBValidKey;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const scrollToPage = useCallback((elementId: string) => {
+  const scrollToPage = useCallback((href: string, pushState = true) => {
+    const currentScrollTop = iframeRef.current!.contentDocument!.documentElement.scrollTop;
+    const maybePushState = () => {
+      if (pushState) {
+        history.replaceState({ scrollTop: currentScrollTop }, "");
+        history.pushState({ href }, "");
+      }
+    }
+
     const iframe = iframeRef.current;
     if (!iframe) {
       return;
     }
     const contentDocument = iframe.contentDocument!;
-    const pageContainer = contentDocument.getElementById(elementId);
+    const [pageId, elementId] = href.split("#", 2);
+    const pageContainer = contentDocument.getElementById(`book/${pageId}`);
     if (pageContainer) {
-      pageContainer.scrollIntoView();
+      if (!elementId) {
+        pageContainer.scrollIntoView();
+        maybePushState();
+      } else {
+        const element = pageContainer.shadowRoot!.getElementById(elementId);
+        if (element) {
+          element.scrollIntoView();
+          maybePushState();
+        }
+      }
     }
   }, []);
-
-  const onClickTocItem = useCallback((href: string) => {
-    scrollToPage(`book/${href}`);
-  }, [scrollToPage]);
 
   const handleIntersection = useCallback((pageTitle: string) => (
     (entries: IntersectionObserverEntry[]) => {
@@ -91,11 +118,13 @@ export function EpubContentView({ content, lastPageIndexKey }: {
       pageContainer.className = "page";
       const shadowRoot = pageContainer.attachShadow({ mode: "open" });
       shadowRoot.addEventListener("click", (e) => {
-        if (e.target instanceof HTMLAnchorElement) {
-          const url = new URL(e.target.href);
+        const anchor = findAnchor(e.target);
+        if (anchor) {
+          const url = new URL(anchor.href);
           if (url.origin === window.location.origin) {
             e.preventDefault();
-            scrollToPage(url.hash.substring(1));
+            e.stopPropagation();
+            scrollToPage(url.hash.substring("#book/".length));
           }
         }
       });
@@ -174,9 +203,29 @@ export function EpubContentView({ content, lastPageIndexKey }: {
     }
   }, [content]);
 
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      if (e.state?.href) {
+        scrollToPage(e.state.href, false);
+      }
+      if (e.state?.scrollTop != null) {
+        const iframe = iframeRef.current;
+        if (iframe) {
+          iframe.contentDocument!.documentElement.scrollTop = e.state.scrollTop;
+        }
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   return (
     <>
-      <TableOfContents items={content.toc} onClick={onClickTocItem} />
+      <TableOfContents items={content.toc} onClick={scrollToPage} />
 
       <iframe
         ref={iframeRef}
