@@ -81,7 +81,7 @@ export class EpubContent {
       if (path != null) {
         const cssItem = this.resolveItemByRelativePath(item.href, path);
         if (cssItem) {
-          resolveTasks.push(this.getObjectUrl(cssItem).then(url => {
+          resolveTasks.push(this.getStylesheetUrl(cssItem).then(url => {
             link.setAttribute("href", url);
           }));
         }
@@ -122,20 +122,43 @@ export class EpubContent {
       .filter(Boolean) as EpubManifestItem[];
   }
 
-  private async getObjectUrl(item: EpubManifestItem) {
+  private async getObjectUrl(item: EpubManifestItem, transformContent?: (content: string) => Promise<string> | string) {
     let cachedUrl = this.objectUrlCache.get(item.id);
     if (cachedUrl) {
       return cachedUrl;
     }
-    const blob = await item.zipEntry.async("blob");
+    let content: Blob | string;
+    if (transformContent) {
+      content = await Promise.resolve(transformContent(await item.zipEntry.async("text")));
+    } else {
+      content = await item.zipEntry.async("blob");
+    }
     cachedUrl = this.objectUrlCache.get(item.id);
     if (cachedUrl) {
       return cachedUrl;
     }
-    const typedBlob = new Blob([blob], { type: item.mediaType });
+    const typedBlob = new Blob([content], { type: item.mediaType });
     const url = URL.createObjectURL(typedBlob);
     this.objectUrlCache.set(item.id, url);
     return url;
+  }
+
+  private async getStylesheetUrl(item: EpubManifestItem) {
+    return this.getObjectUrl(item, async (content) => {
+      const urls: Set<string> = new Set();
+      for (const match of content.matchAll(urlRegex)) {
+        urls.add(match[1]);
+      }
+      const resolvedUrls = await Promise.all(Array.from(urls).map(async url => {
+        const resolvedItem = this.resolveItemByRelativePath(item.href, url);
+        const resolvedUrl = resolvedItem ? await this.getObjectUrl(resolvedItem) : url;
+        return [url, resolvedUrl] as [string, string];
+      }));
+      const urlMap = new Map(resolvedUrls);
+      return content.replaceAll(urlRegex, (_, path) => {
+        return `url("${urlMap.get(path) ?? path}")`;
+      });
+    });
   }
 
   private resolveItemByRelativePath(basePath: string, relativePath: string) {
@@ -148,5 +171,8 @@ export class EpubContent {
     for (const url of this.objectUrlCache.values()) {
       URL.revokeObjectURL(url);
     }
+    this.objectUrlCache.clear();
   }
 }
+
+const urlRegex = /url\(['"]?(.+?)['"]?\)/g;
