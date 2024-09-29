@@ -50,7 +50,7 @@
     }
   }
 
-  @media (max-width: 400px) and (max-width: 832px) {
+  @media (max-width: 400px) {
 
     section:has(p),
     body:has(>p),
