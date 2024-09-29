@@ -97,7 +97,7 @@ export function CbzViewer({ zip, lastPageIndexKey, documentName, onClose }:
       onChangePage={handlePageChange}
       onClose={onClose}
     />
-  ) : <main>Loading...</main>;
+  ) : <div>Loading...</div>;
 }
 
 function calculateImageHeight() {

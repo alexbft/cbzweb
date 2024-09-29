@@ -52,9 +52,9 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
   }, []);
 
   return (
-    <main
+    <div
       ref={containerRef}
-      className="fixed top-0 left-0 w-screen h-screen grid place-items-center overflow-auto bg-[#39322B]"
+      className="fixed top-0 left-0 w-screen h-screen grid place-items-center overflow-auto"
       onWheel={(e) => {
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
           return;
@@ -82,6 +82,6 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
           <div className="h-full grid place-content-center" style={{ width: lastWidthRef.current }}>Loading page {pageIndex}...</div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
