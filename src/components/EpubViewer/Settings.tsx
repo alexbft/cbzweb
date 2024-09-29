@@ -19,7 +19,7 @@ export function Settings() {
           <ALargeSmallIcon className="size-8" />
         </label>
         <Slider
-          className="w-[350px]"
+          className="w-[310px]"
           min={6}
           max={48}
           step={0.1}
@@ -29,7 +29,7 @@ export function Settings() {
       </div>
       <div className="flex flex-col gap-2">
         <label>Custom CSS (all books)</label>
-        <Textarea className="w-[350px] h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800"
+        <Textarea className="w-full h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800"
           defaultValue={globalUserCss}
           onBlur={(e) => {
             setGlobalUserCss(e.target.value);
@@ -37,7 +37,7 @@ export function Settings() {
       </div>
       <div className="flex flex-col gap-2">
         <label>Custom CSS (this book only)</label>
-        <Textarea className="w-[350px] h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800"
+        <Textarea className="w-full h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800"
           defaultValue={currentBookConfig?.userCss}
           onBlur={(e) => {
             currentBookConfig?.setUserCss(e.target.value);

@@ -36,11 +36,12 @@ function findAnchor(target: unknown): HTMLAnchorElement | null {
   return null;
 }
 
-export function EpubContentView({ content, lastPageIndexKey, onScroll, controllerRef }: {
+export function EpubContentView({ content, lastPageIndexKey, onScroll, controllerRef, onToggleFullscreen }: {
   content: EpubContent;
   lastPageIndexKey: IDBValidKey;
   onScroll: (verticalDirection: number) => void;
   controllerRef: React.MutableRefObject<EpubViewController | null>;
+  onToggleFullscreen: () => void;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -188,9 +189,11 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
         }
       });
       shadowRoot.addEventListener("dblclick", (e) => {
+        e.preventDefault();
         if (e.target instanceof HTMLImageElement) {
-          e.preventDefault();
           window.open(e.target.src, "_blank");
+        } else {
+          onToggleFullscreen();
         }
       });
       shadowRoot.adoptedStyleSheets = stylesheets;
@@ -218,12 +221,15 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       return false;
     }
 
-    function wheelHandler(e: WheelEvent) {
-      if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
-        return;
+    let prevScrollTop: number | null = null;
+    function scrollHandler() {
+      const scrollTop = iframeRef.current?.contentDocument?.documentElement.scrollTop;
+      if (scrollTop != null) {
+        if (prevScrollTop !== null) {
+          onScroll(Math.sign(scrollTop - prevScrollTop));
+        }
+        prevScrollTop = scrollTop;
       }
-
-      onScroll(Math.sign(e.deltaY));
     }
 
     async function load() {
@@ -252,7 +258,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
         currentBookUserCssSheet.replaceSync(wrapCurrentBookUserCss(currentBookConfig?.userCss ?? ""));
         currentBookUserCssSheetRef.current = currentBookUserCssSheet;
         iframe.contentDocument!.addEventListener("scrollend", scrollEndHandler);
-        iframe.contentDocument!.addEventListener("wheel", wheelHandler);
+        iframe.contentDocument!.addEventListener("scroll", scrollHandler);
 
         let isFirstPage = true;
         for await (const page of pagesGenerator()) {
@@ -281,7 +287,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
     return () => {
       isCancelled = true;
       iframeRef.current?.contentDocument?.removeEventListener("scrollend", scrollEndHandler);
-      iframeRef.current?.contentDocument?.removeEventListener("wheel", wheelHandler);
+      iframeRef.current?.contentDocument?.removeEventListener("scroll", scrollHandler);
       globalUserCssSheetRef.current = null;
       currentBookUserCssSheetRef.current = null;
     }

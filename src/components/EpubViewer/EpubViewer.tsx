@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import { Hud } from "../Hud/Hud";
 import { HudCloseButton } from "../HudCloseButton/HudCloseButton";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { loadEpub } from "@/helpers/loadEpub";
 import { EpubContent } from "@/helpers/EpubContent";
 import { EpubContentView, EpubViewController } from "./EpubContentView";
@@ -55,6 +55,14 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
     setHudHidden(verticalDirection >= 0);
   }
 
+  const toggleFullScreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      return;
+    }
+    document.body.requestFullscreen();
+  }, []);
+
   return (
     <CurrentBookConfigProvider idbKey={lastPageIndexKey}>
       <div className="h-full grid place-items-center">
@@ -65,7 +73,7 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="min-w-[400px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
+              className="min-w-[360px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
               aria-describedby={undefined}
               overlay={
                 <div className="fixed inset-0" />
@@ -94,7 +102,8 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
               controllerRef={controllerRef}
               content={content}
               lastPageIndexKey={lastPageIndexKey}
-              onScroll={handleScroll} />
+              onScroll={handleScroll}
+              onToggleFullscreen={toggleFullScreen} />
           ) : (
             <div className="h-full aspect-[3/4] max-w-full">
               <div className="p-4">Loading...</div>
