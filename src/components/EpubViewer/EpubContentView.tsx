@@ -236,8 +236,8 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           }
         });
         const iframe = iframeRef.current!;
-        iframe.srcdoc = bookHtml;
         iframe.sandbox.add("allow-scripts");
+        iframe.srcdoc = bookHtml;
         await waitUntilLoaded(iframe);
         const createStylesheet = (iframe.contentWindow! as any).createStylesheet as () => CSSStyleSheet;
         const bookStylesheet = createStylesheet();
