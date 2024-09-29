@@ -7,6 +7,13 @@ import { EpubContent } from "./EpubContent";
 import { nodeToArray } from "./nodeToArray";
 import { resolvePath } from "./resolvePath";
 
+function getNodeText(node: any): string {
+  if (typeof node === "string") {
+    return node;
+  }
+  return node['#text'] ?? "";
+}
+
 export async function loadEpub(zip: JSZip) {
   const containerXmlText = await zip.file("META-INF/container.xml")?.async("text");
   if (!containerXmlText) {
@@ -21,7 +28,7 @@ export async function loadEpub(zip: JSZip) {
   }
   const basePath = dirName(rootPath);
   const rootXml = xmlParser.parse(rootXmlText, true);
-  const bookTitle = rootXml.package.metadata.title.toString();
+  const bookTitle = getNodeText(rootXml.package.metadata.title);
   const manifestItems = nodeToArray<EpubManifestItemNode>(rootXml.package.manifest.item).map(node => {
     const href = resolvePath(basePath, node["@_href"]);
     const zipEntry = zip.file(href);
@@ -57,10 +64,7 @@ export async function loadEpub(zip: JSZip) {
     const manifestItem = manifestItemByHref.get(href);
     if (manifestItem) {
       tocItemIds.push(manifestItem.id);
-      const navLabel = navPoint.navLabel.text;
-      if (typeof navLabel !== "string") {
-        continue;
-      }
+      const navLabel = getNodeText(navPoint.navLabel.text);
       manifestItem.title = navLabel;
     }
   }

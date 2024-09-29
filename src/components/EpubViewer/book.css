@@ -30,7 +30,9 @@
 
     section:has(p),
     body:has(>p),
-    nav {
+    nav,
+    ol,
+    ul {
       max-width: 800px;
       margin-left: auto !important;
       margin-right: auto !important;
@@ -41,7 +43,9 @@
 
     section:has(p),
     body:has(>p),
-    nav {
+    nav,
+    ol,
+    ul {
       padding: 0 8px;
     }
   }
