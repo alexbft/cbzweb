@@ -14,8 +14,11 @@ export function Main() {
   };
 
   return (
-    file ?
-      <Viewer file={file} onClose={handleClose} />
-      : <FilePicker autoLoadRecent={autoLoadRecent} onFileChange={setFile} />
+    <main className="bg-bg-light text-fg-light dark:bg-bg-dark dark:text-gray-50 h-screen">
+      {file ?
+        <Viewer file={file} onClose={handleClose} />
+        : <FilePicker autoLoadRecent={autoLoadRecent} onFileChange={setFile} />
+      }
+    </main>
   );
 }

@@ -6,16 +6,19 @@ import { useCallback, useEffect, useRef } from "react";
 
 import bookCss from "./book.css?inline";
 import bookHtml from "./bookIndex.html?raw";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { ColorScheme } from "@/types/ColorScheme";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 export interface EpubViewController {
-  focus(): void;
+  jumpTo(href: string): void;
 }
 
 function waitUntilLoaded(iframe: HTMLIFrameElement) {
   return new Promise<void>((resolve) => {
     iframe.addEventListener("load", () => {
       resolve();
-    });
+    }, { once: true });
   });
 }
 
@@ -39,6 +42,34 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
   controllerRef: React.MutableRefObject<EpubViewController | null>;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const updateIframeColorScheme = useCallback((colorScheme: ColorScheme) => {
+    const iframe = iframeRef.current;
+    if (iframe) {
+      const documentElement = iframe.contentDocument!.documentElement;
+      documentElement.classList.remove("light", "dark");
+      documentElement.classList.add(colorScheme);
+      const pages = iframe.contentDocument!.querySelectorAll(".page");
+      for (const page of pages) {
+        const pageElement = page.shadowRoot!.querySelector("html")!;
+        pageElement.classList.remove("light", "dark");
+        pageElement.classList.add(colorScheme);
+      }
+    }
+  }, []);
+
+  const updateCssVar = useCallback((name: string, value: string) => {
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.contentDocument!.documentElement.style.setProperty(name, value);
+    }
+  }, []);
+
+  const { computedColorScheme } = useColorScheme();
+
+  useEffect(() => {
+    updateIframeColorScheme(computedColorScheme);
+  }, [computedColorScheme]);
 
   const scrollToHref = useCallback((href: string, pushState = true) => {
     const currentScrollTop = iframeRef.current!.contentDocument!.documentElement.scrollTop;
@@ -99,6 +130,12 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
     };
   }, [lastPageIndexKey]);
 
+  const { fontSize } = useAppConfig();
+
+  useEffect(() => {
+    updateCssVar("--book-font-size", `${fontSize}px`);
+  }, [fontSize]);
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -108,7 +145,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       }
     }
 
-    function addPage(page: EpubPage, isFirstPage = false) {
+    function addPage(page: EpubPage, bookStylesheet: CSSStyleSheet, isFirstPage = false) {
       const iframe = iframeRef.current;
       if (!iframe) {
         return;
@@ -139,10 +176,10 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           window.open(e.target.src, "_blank");
         }
       });
-      const style = contentDocument.createElement("style");
-      style.textContent = bookCss;
-      shadowRoot.appendChild(style);
+      shadowRoot.adoptedStyleSheets = [bookStylesheet];
       shadowRoot.appendChild(page.documentElement);
+      const pageElement = shadowRoot.querySelector("html")!;
+      pageElement.classList.add(computedColorScheme);
       contentDocument.body.appendChild(pageContainer);
       const observer = new IntersectionObserver(handleIntersection(page.title));
       observer.observe(pageContainer);
@@ -183,7 +220,13 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
         });
         const iframe = iframeRef.current!;
         iframe.srcdoc = bookHtml;
+        iframe.sandbox.add("allow-scripts");
         await waitUntilLoaded(iframe);
+        const bookStylesheet = (iframe.contentWindow! as any).createStylesheet() as CSSStyleSheet;
+        iframe.sandbox.remove("allow-scripts");
+        updateIframeColorScheme(computedColorScheme);
+        updateCssVar("--book-font-size", `${fontSize}px`);
+        bookStylesheet.replaceSync(bookCss);
         iframe.contentDocument!.addEventListener("scrollend", scrollEndHandler);
         iframe.contentDocument!.addEventListener("wheel", wheelHandler);
 
@@ -192,7 +235,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           if (isCancelled) {
             return;
           }
-          addPage(page, isFirstPage);
+          addPage(page, bookStylesheet, isFirstPage);
           isFirstPage = false;
           if (!scrollRestored && prevScrollTop !== null) {
             scrollRestored = restoreScroll(prevScrollTop);
@@ -240,8 +283,8 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
 
   useEffect(() => {
     controllerRef.current = {
-      focus() {
-        iframeRef.current?.focus();
+      jumpTo(href) {
+        scrollToHref(href);
       }
     };
 

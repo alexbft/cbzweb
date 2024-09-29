@@ -1,24 +1,15 @@
 @layer app {
-  html {
-    color: white;
-    font-family: sans-serif;
-    line-height: 1.5;
-    font-size: 16px;
-  }
-
-  @media (min-width: 1024px) {
-    html {
-      font-size: 20px;
-    }
-  }
-
   body {
     margin: 0;
     padding: 0;
   }
 
   a {
-    color: #818cf8;
+    color: var(--book-link-color);
+  }
+
+  .dark a {
+    color: var(--book-link-color-dark);
   }
 
   img,

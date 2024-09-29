@@ -5,9 +5,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --book-link-color: #3f51b5;
+      --book-link-color-dark: #818cf8;
+      --book-font-size: 16px;
+      --book-text-color: #39322B;
+      --book-text-color-dark: #f8fafc;
+      --book-bg-color-dark: #39322B;
+      /* stone-300 */
+      --book-thumb-color-dark: #d6d3d1;
+    }
+
+    html {
+      color: var(--book-text-color);
+      font-family: sans-serif;
+      line-height: 1.5;
+      font-size: var(--book-font-size);
+    }
+
+    html.dark {
+      color: var(--book-text-color-dark);
+      scrollbar-color: var(--book-thumb-color-dark) var(--book-bg-color-dark);
+    }
+
     body {
       margin: 0;
       padding: 0;
+      font-size: 1em;
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        font-size: 1.25em;
+      }
     }
 
     hr {
@@ -19,6 +49,10 @@
       background-color: rgb(255 255 255 / 0.1);
     }
 
+    .dark hr {
+      background-color: rgb(0 0 0 / 0.1);
+    }
+
     .page {
       min-height: 100vh;
     }
@@ -26,6 +60,11 @@
 </head>
 
 <body>
+  <script>
+    function createStylesheet() {
+      return new CSSStyleSheet();
+    }
+  </script>
 </body>
 
 </html>

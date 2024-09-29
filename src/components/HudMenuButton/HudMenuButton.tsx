@@ -9,11 +9,11 @@ export const HudMenuButton = forwardRef<HTMLButtonElement, HudMenuButtonProps>((
   return (
     <Button
       ref={ref}
-      className={cn("absolute top-4 left-6 group size-16 hover:bg-black hover:bg-opacity-25 rounded-full", props.className)}
+      className={cn("absolute top-4 left-6 group size-16 rounded-full hover:bg-black/30", props.className)}
       variant="ghost"
       {...props}
     >
-      <MenuIcon className="text-white opacity-30 group-hover:opacity-100 size-8" />
+      <MenuIcon className="text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white size-8" />
     </Button>
   );
 });

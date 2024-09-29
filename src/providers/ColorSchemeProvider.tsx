@@ -16,27 +16,31 @@ export function ColorSchemeProvider({
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
     () => (localStorage.getItem(storageKey) as ColorScheme) || defaultColorScheme
   );
+  const [computedColorScheme, setComputedColorScheme] = useState<ColorScheme>(colorScheme === "system" ? "light" : colorScheme);
 
   useEffect(() => {
-    const root = window.document.documentElement
-
-    root.classList.remove("light", "dark")
-
     if (colorScheme === "system") {
       const systemColorScheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
         ? "dark"
-        : "light"
+        : "light";
 
-      root.classList.add(systemColorScheme)
-      return
+      setComputedColorScheme(systemColorScheme);
+    } else {
+      setComputedColorScheme(colorScheme);
     }
-
-    root.classList.add(colorScheme)
   }, [colorScheme]);
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+
+    root.classList.remove("light", "dark")
+    root.classList.add(computedColorScheme);
+  }, [computedColorScheme]);
 
   const value = {
     colorScheme,
+    computedColorScheme,
     setColorScheme: (colorScheme: ColorScheme) => {
       localStorage.setItem(storageKey, colorScheme)
       setColorScheme(colorScheme)

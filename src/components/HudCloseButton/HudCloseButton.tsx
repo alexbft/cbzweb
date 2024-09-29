@@ -1,13 +1,19 @@
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { ComponentProps, forwardRef } from "react";
 import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
-export function HudCloseButton({ onClick }: { onClick: () => void }) {
+type HudCloseButtonProps = Omit<ComponentProps<typeof Button>, 'variant'>;
+
+export const HudCloseButton = forwardRef<HTMLButtonElement, HudCloseButtonProps>((props, ref) => {
   return (
     <Button
-      className="absolute top-4 right-6 group size-16 hover:bg-black hover:bg-opacity-25 rounded-full"
+      ref={ref}
+      className={cn("absolute top-4 right-6 group size-16 rounded-full hover:bg-black/30", props.className)}
       variant="ghost"
-      onClick={onClick}>
-      <Cross2Icon className="text-white opacity-30 group-hover:opacity-100 size-8" />
+      {...props}
+    >
+      <Cross2Icon className="text-gray-600 dark:text-gray-400 group-hover:text-black dark:group-hover:text-white size-8" />
     </Button>
   );
-}
+});

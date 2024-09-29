@@ -53,7 +53,7 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
   }
 
   return (
-    <main className="bg-[#39322B] h-screen text-gray-50 grid place-items-center">
+    <div className="h-full grid place-items-center">
       <Hud hidden={hudHidden}>
         <Sheet modal={false} open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetTrigger asChild>
@@ -61,32 +61,40 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-[400px] bg-black/50 text-white"
+            className="min-w-[400px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
             aria-describedby={undefined}
             overlay={
               <div className="fixed inset-0" />
             }>
             <SheetHeader>
               <VisuallyHidden asChild>
-                <SheetTitle className="text-white">Epub Viewer</SheetTitle>
+                <SheetTitle>Epub Viewer</SheetTitle>
               </VisuallyHidden>
             </SheetHeader>
-            <Sidebar />
+            <Sidebar
+              book={content}
+              onLinkClick={(href) => {
+                controllerRef.current?.jumpTo(href);
+                setSidebarOpen(false);
+              }}
+            />
           </SheetContent>
         </Sheet>
         <HudCloseButton onClick={onClose} />
       </Hud>
-      {content ? (
-        <EpubContentView
-          controllerRef={controllerRef}
-          content={content}
-          lastPageIndexKey={lastPageIndexKey}
-          onScroll={handleScroll} />
-      ) : (
-        <div className="h-full aspect-[3/4] max-w-full">
-          <div className="p-4">Loading...</div>
-        </div>
-      )}
-    </main>
+      {
+        content ? (
+          <EpubContentView
+            controllerRef={controllerRef}
+            content={content}
+            lastPageIndexKey={lastPageIndexKey}
+            onScroll={handleScroll} />
+        ) : (
+          <div className="h-full aspect-[3/4] max-w-full">
+            <div className="p-4">Loading...</div>
+          </div>
+        )
+      }
+    </div>
   );
 }
