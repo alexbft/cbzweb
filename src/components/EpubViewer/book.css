@@ -39,14 +39,15 @@
     }
   }
 
-  @media not (min-width: 832px) {
+  @media (min-width: 400px) and (max-width: 832px) {
 
     section:has(p),
     body:has(>p),
     nav,
     ol,
     ul {
-      padding: 0 4px;
+      padding: 0 8px;
     }
   }
+
 }
