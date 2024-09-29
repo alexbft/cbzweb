@@ -2,38 +2,37 @@ import { ALargeSmallIcon } from "lucide-react";
 import { Slider } from "../ui/slider";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { appConfigDefaults } from "@/types/AppConfig";
+import { Textarea } from "../ui/textarea";
 
 export function Settings() {
-  const { fontSize, setFontSize } = useAppConfig();
+  const { fontSize, setFontSize, globalUserCss, setGlobalUserCss } = useAppConfig();
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <label className="cursor-pointer" onClick={() => {
           setFontSize(appConfigDefaults.fontSize)
         }}>
           <ALargeSmallIcon className="size-8" />
         </label>
         <Slider
-          className="w-[400px]"
+          className="w-[350px]"
           min={6}
-          max={72}
+          max={48}
           step={0.1}
           value={[fontSize]}
           onValueChange={([value]) => setFontSize(value)}
         />
       </div>
-      <div>
-        <label htmlFor="line-height">Line height</label>
-        <input type="range" id="line-height" min="1" max="3" step="0.1" />
+      <div className="flex flex-col gap-2">
+        <label>Custom CSS (all books)</label>
+        <Textarea className="w-[350px] h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800" defaultValue={globalUserCss} onBlur={(e) => {
+          setGlobalUserCss(e.target.value);
+        }} />
       </div>
-      <div>
-        <label htmlFor="font-family">Font family</label>
-        <select id="font-family">
-          <option value="serif">Serif</option>
-          <option value="sans-serif">Sans-serif</option>
-          <option value="monospace">Monospace</option>
-        </select>
+      <div className="flex flex-col gap-2">
+        <label>Custom CSS (this book only)</label>
+        <Textarea className="w-[350px] h-[200px] p-2 font-mono whitespace-pre resize bg-gray-100 dark:bg-gray-800" />
       </div>
     </div>
   );

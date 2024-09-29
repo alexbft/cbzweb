@@ -7,11 +7,13 @@ import { TableOfContents } from "./TableOfContents";
 import { Settings } from "./Settings";
 
 export interface SidebarProps {
+  tab: string;
+  onTabChange: (tab: string) => void;
   book: EpubContent | null;
   onLinkClick: (href: string) => void;
 }
 
-export function Sidebar({ book, onLinkClick }: SidebarProps) {
+export function Sidebar({ tab, onTabChange, book, onLinkClick }: SidebarProps) {
   const { colorScheme, setColorScheme } = useColorScheme();
 
   return (
@@ -23,7 +25,7 @@ export function Sidebar({ book, onLinkClick }: SidebarProps) {
           <TabsTrigger className="gap-1" value="dark"><MoonIcon className="size-4" />Dark</TabsTrigger>
         </TabsList>
       </Tabs>
-      <Tabs className="flex-1 flex flex-col gap-4 items-start" defaultValue="toc">
+      <Tabs className="flex-1 flex flex-col gap-4 items-start" value={tab} onValueChange={onTabChange}>
         <TabsList>
           <TabsTrigger value="toc">Book contents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>

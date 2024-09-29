@@ -130,11 +130,17 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
     };
   }, [lastPageIndexKey]);
 
-  const { fontSize } = useAppConfig();
+  const { fontSize, globalUserCss } = useAppConfig();
 
   useEffect(() => {
     updateCssVar("--book-font-size", `${fontSize}px`);
   }, [fontSize]);
+
+  const globalUserCssSheetRef = useRef<CSSStyleSheet | null>(null);
+
+  useEffect(() => {
+    globalUserCssSheetRef.current?.replace(globalUserCss);
+  }, [globalUserCss]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -145,7 +151,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       }
     }
 
-    function addPage(page: EpubPage, bookStylesheet: CSSStyleSheet, isFirstPage = false) {
+    function addPage(page: EpubPage, stylesheets: CSSStyleSheet[], isFirstPage = false) {
       const iframe = iframeRef.current;
       if (!iframe) {
         return;
@@ -176,7 +182,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           window.open(e.target.src, "_blank");
         }
       });
-      shadowRoot.adoptedStyleSheets = [bookStylesheet];
+      shadowRoot.adoptedStyleSheets = stylesheets;
       shadowRoot.appendChild(page.documentElement);
       const pageElement = shadowRoot.querySelector("html")!;
       pageElement.classList.add(computedColorScheme);
@@ -222,11 +228,15 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
         iframe.srcdoc = bookHtml;
         iframe.sandbox.add("allow-scripts");
         await waitUntilLoaded(iframe);
-        const bookStylesheet = (iframe.contentWindow! as any).createStylesheet() as CSSStyleSheet;
+        const createStylesheet = (iframe.contentWindow! as any).createStylesheet as () => CSSStyleSheet;
+        const bookStylesheet = createStylesheet();
+        const globalUserCssSheet = createStylesheet();
         iframe.sandbox.remove("allow-scripts");
         updateIframeColorScheme(computedColorScheme);
         updateCssVar("--book-font-size", `${fontSize}px`);
         bookStylesheet.replaceSync(bookCss);
+        globalUserCssSheet.replaceSync(`@layer user {\n${globalUserCss}\n}`);
+        globalUserCssSheetRef.current = globalUserCssSheet;
         iframe.contentDocument!.addEventListener("scrollend", scrollEndHandler);
         iframe.contentDocument!.addEventListener("wheel", wheelHandler);
 
@@ -235,7 +245,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           if (isCancelled) {
             return;
           }
-          addPage(page, bookStylesheet, isFirstPage);
+          addPage(page, [bookStylesheet, globalUserCssSheet], isFirstPage);
           isFirstPage = false;
           if (!scrollRestored && prevScrollTop !== null) {
             scrollRestored = restoreScroll(prevScrollTop);
@@ -258,6 +268,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       isCancelled = true;
       iframeRef.current?.contentDocument?.removeEventListener("scrollend", scrollEndHandler);
       iframeRef.current?.contentDocument?.removeEventListener("wheel", wheelHandler);
+      globalUserCssSheetRef.current = null;
     }
   }, [content]);
 

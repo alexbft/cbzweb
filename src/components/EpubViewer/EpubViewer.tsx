@@ -21,6 +21,8 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [tab, setTab] = useState("toc");
+
   const controllerRef = useRef<EpubViewController | null>(null);
 
   useEffect(() => {
@@ -72,6 +74,8 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
               </VisuallyHidden>
             </SheetHeader>
             <Sidebar
+              tab={tab}
+              onTabChange={setTab}
               book={content}
               onLinkClick={(href) => {
                 controllerRef.current?.jumpTo(href);

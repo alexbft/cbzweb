@@ -2,6 +2,7 @@ import { createContext } from "react";
 
 export interface AppConfig {
   fontSize: number;
+  globalUserCss: string;
 }
 
 export type AppConfigController = {
@@ -14,4 +15,5 @@ export const AppConfigContext = createContext<AppConfigController>({} as AppConf
 
 export const appConfigDefaults: AppConfig = {
   fontSize: 16,
+  globalUserCss: "",
 };
