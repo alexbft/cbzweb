@@ -9,6 +9,7 @@ import { HudMenuButton } from "../HudMenuButton/HudMenuButton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Sidebar } from "./Sidebar";
+import { CurrentBookConfigProvider } from "@/providers/CurrentBookConfigProvider";
 
 export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
   zip: JSZip;
@@ -55,50 +56,52 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
   }
 
   return (
-    <div className="h-full grid place-items-center">
-      <Hud hidden={hudHidden}>
-        <Sheet modal={false} open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild>
-            <HudMenuButton />
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="min-w-[400px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
-            aria-describedby={undefined}
-            overlay={
-              <div className="fixed inset-0" />
-            }>
-            <SheetHeader>
-              <VisuallyHidden asChild>
-                <SheetTitle>Epub Viewer</SheetTitle>
-              </VisuallyHidden>
-            </SheetHeader>
-            <Sidebar
-              tab={tab}
-              onTabChange={setTab}
-              book={content}
-              onLinkClick={(href) => {
-                controllerRef.current?.jumpTo(href);
-                setSidebarOpen(false);
-              }}
-            />
-          </SheetContent>
-        </Sheet>
-        <HudCloseButton onClick={onClose} />
-      </Hud>
-      {
-        content ? (
-          <EpubContentView
-            controllerRef={controllerRef}
-            content={content}
-            lastPageIndexKey={lastPageIndexKey}
-            onScroll={handleScroll} />
-        ) : (
-          <div className="h-full aspect-[3/4] max-w-full">
-            <div className="p-4">Loading...</div>
-          </div>
-        )
-      }
-    </div>
+    <CurrentBookConfigProvider idbKey={lastPageIndexKey}>
+      <div className="h-full grid place-items-center">
+        <Hud hidden={hudHidden}>
+          <Sheet modal={false} open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <HudMenuButton />
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="min-w-[400px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
+              aria-describedby={undefined}
+              overlay={
+                <div className="fixed inset-0" />
+              }>
+              <SheetHeader>
+                <VisuallyHidden asChild>
+                  <SheetTitle>Epub Viewer</SheetTitle>
+                </VisuallyHidden>
+              </SheetHeader>
+              <Sidebar
+                tab={tab}
+                onTabChange={setTab}
+                book={content}
+                onLinkClick={(href) => {
+                  controllerRef.current?.jumpTo(href);
+                  setSidebarOpen(false);
+                }}
+              />
+            </SheetContent>
+          </Sheet>
+          <HudCloseButton onClick={onClose} />
+        </Hud>
+        {
+          content ? (
+            <EpubContentView
+              controllerRef={controllerRef}
+              content={content}
+              lastPageIndexKey={lastPageIndexKey}
+              onScroll={handleScroll} />
+          ) : (
+            <div className="h-full aspect-[3/4] max-w-full">
+              <div className="p-4">Loading...</div>
+            </div>
+          )
+        }
+      </div>
+    </CurrentBookConfigProvider>
   );
 }

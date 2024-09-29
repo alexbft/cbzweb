@@ -9,6 +9,7 @@ import bookHtml from "./bookIndex.html?raw";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ColorScheme } from "@/types/ColorScheme";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { useCurrentBookConfig } from "@/hooks/useCurrentBookConfig";
 
 export interface EpubViewController {
   jumpTo(href: string): void;
@@ -139,8 +140,18 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
   const globalUserCssSheetRef = useRef<CSSStyleSheet | null>(null);
 
   useEffect(() => {
-    globalUserCssSheetRef.current?.replace(globalUserCss);
+    globalUserCssSheetRef.current?.replace(wrapGlobalUserCss(globalUserCss));
   }, [globalUserCss]);
+
+  const currentBookConfig = useCurrentBookConfig();
+
+  const currentBookUserCssSheetRef = useRef<CSSStyleSheet | null>(null);
+
+  useEffect(() => {
+    if (currentBookConfig != null) {
+      currentBookUserCssSheetRef.current?.replace(wrapCurrentBookUserCss(currentBookConfig.userCss));
+    }
+  }, [currentBookConfig?.userCss]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -231,12 +242,15 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
         const createStylesheet = (iframe.contentWindow! as any).createStylesheet as () => CSSStyleSheet;
         const bookStylesheet = createStylesheet();
         const globalUserCssSheet = createStylesheet();
+        const currentBookUserCssSheet = createStylesheet();
         iframe.sandbox.remove("allow-scripts");
         updateIframeColorScheme(computedColorScheme);
         updateCssVar("--book-font-size", `${fontSize}px`);
         bookStylesheet.replaceSync(bookCss);
-        globalUserCssSheet.replaceSync(`@layer user {\n${globalUserCss}\n}`);
+        globalUserCssSheet.replaceSync(wrapGlobalUserCss(globalUserCss));
         globalUserCssSheetRef.current = globalUserCssSheet;
+        currentBookUserCssSheet.replaceSync(wrapCurrentBookUserCss(currentBookConfig?.userCss ?? ""));
+        currentBookUserCssSheetRef.current = currentBookUserCssSheet;
         iframe.contentDocument!.addEventListener("scrollend", scrollEndHandler);
         iframe.contentDocument!.addEventListener("wheel", wheelHandler);
 
@@ -245,7 +259,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
           if (isCancelled) {
             return;
           }
-          addPage(page, [bookStylesheet, globalUserCssSheet], isFirstPage);
+          addPage(page, [bookStylesheet, globalUserCssSheet, currentBookUserCssSheet], isFirstPage);
           isFirstPage = false;
           if (!scrollRestored && prevScrollTop !== null) {
             scrollRestored = restoreScroll(prevScrollTop);
@@ -269,6 +283,7 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       iframeRef.current?.contentDocument?.removeEventListener("scrollend", scrollEndHandler);
       iframeRef.current?.contentDocument?.removeEventListener("wheel", wheelHandler);
       globalUserCssSheetRef.current = null;
+      currentBookUserCssSheetRef.current = null;
     }
   }, [content]);
 
@@ -314,4 +329,12 @@ export function EpubContentView({ content, lastPageIndexKey, onScroll, controlle
       />
     </>
   );
+}
+
+function wrapGlobalUserCss(css: string) {
+  return `@layer user-global {\n${css}\n}`;
+}
+
+function wrapCurrentBookUserCss(css: string) {
+  return `@layer user-local {\n${css}\n}`;
 }
