@@ -6,7 +6,10 @@ import { useCallback, useEffect, useRef } from "react";
 
 import bookCss from "./book.css?inline";
 import bookHtml from "./bookIndex.html?raw";
-import { TableOfContents } from "./TableOfContents";
+
+export interface EpubViewController {
+  focus(): void;
+}
 
 function waitUntilLoaded(iframe: HTMLIFrameElement) {
   return new Promise<void>((resolve) => {
@@ -29,9 +32,11 @@ function findAnchor(target: unknown): HTMLAnchorElement | null {
   return null;
 }
 
-export function EpubContentView({ content, lastPageIndexKey }: {
+export function EpubContentView({ content, lastPageIndexKey, onScroll, controllerRef }: {
   content: EpubContent;
   lastPageIndexKey: IDBValidKey;
+  onScroll: (verticalDirection: number) => void;
+  controllerRef: React.MutableRefObject<EpubViewController | null>;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -75,7 +80,7 @@ export function EpubContentView({ content, lastPageIndexKey }: {
     }
   ), []);
 
-  const createScrollHandler = useCallback(() => {
+  const createScrollEndHandler = useCallback(() => {
     let prevScrollTop = 0;
     let idleCallback: number | null = null;
 
@@ -143,9 +148,9 @@ export function EpubContentView({ content, lastPageIndexKey }: {
       observer.observe(pageContainer);
     }
 
-    const handleScroll = createScrollHandler();
-    const scrollHandler = () => {
-      handleScroll(iframeRef.current!.contentDocument!.documentElement.scrollTop * window.devicePixelRatio);
+    const handleScrollEnd = createScrollEndHandler();
+    const scrollEndHandler = () => {
+      handleScrollEnd(iframeRef.current!.contentDocument!.documentElement.scrollTop * window.devicePixelRatio);
     }
 
     function restoreScroll(scrollTop: number) {
@@ -157,6 +162,14 @@ export function EpubContentView({ content, lastPageIndexKey }: {
         return true;
       }
       return false;
+    }
+
+    function wheelHandler(e: WheelEvent) {
+      if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
+        return;
+      }
+
+      onScroll(Math.sign(e.deltaY));
     }
 
     async function load() {
@@ -171,7 +184,8 @@ export function EpubContentView({ content, lastPageIndexKey }: {
         const iframe = iframeRef.current!;
         iframe.srcdoc = bookHtml;
         await waitUntilLoaded(iframe);
-        iframe.contentDocument!.addEventListener("scrollend", scrollHandler);
+        iframe.contentDocument!.addEventListener("scrollend", scrollEndHandler);
+        iframe.contentDocument!.addEventListener("wheel", wheelHandler);
 
         let isFirstPage = true;
         for await (const page of pagesGenerator()) {
@@ -199,7 +213,8 @@ export function EpubContentView({ content, lastPageIndexKey }: {
 
     return () => {
       isCancelled = true;
-      iframeRef.current?.contentDocument?.removeEventListener("scrollend", scrollHandler);
+      iframeRef.current?.contentDocument?.removeEventListener("scrollend", scrollEndHandler);
+      iframeRef.current?.contentDocument?.removeEventListener("wheel", wheelHandler);
     }
   }, [content]);
 
@@ -223,10 +238,20 @@ export function EpubContentView({ content, lastPageIndexKey }: {
     };
   }, []);
 
+  useEffect(() => {
+    controllerRef.current = {
+      focus() {
+        iframeRef.current?.focus();
+      }
+    };
+
+    return () => {
+      controllerRef.current = null;
+    }
+  }, [controllerRef]);
+
   return (
     <>
-      <TableOfContents items={content.toc} onClick={scrollToHref} />
-
       <iframe
         ref={iframeRef}
         className="w-full h-full"
