@@ -63,6 +63,12 @@ export function EpubViewer({ zip, lastPageIndexKey, onClose }: {
     document.body.requestFullscreen();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      document.exitFullscreen();
+    };
+  }, []);
+
   return (
     <CurrentBookConfigProvider idbKey={lastPageIndexKey}>
       <div className="h-full grid place-items-center">
