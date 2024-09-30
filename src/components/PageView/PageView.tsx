@@ -48,7 +48,7 @@ export function PageView({ pageLoader, pageIndex, height, onChangePage, onClose 
       document.exitFullscreen();
       return;
     }
-    containerRef.current?.requestFullscreen();
+    document.body.requestFullscreen();
   }, []);
 
   return (
