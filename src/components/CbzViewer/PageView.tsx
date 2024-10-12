@@ -178,7 +178,10 @@ export function PageView({
 		>
 			<Hud>
 				<HudCloseButton onClick={onClose} />
-				<HudButton onClick={toggleFullScreen} className="absolute top-4 left-6">
+				<HudButton
+					onClick={toggleFullScreen}
+					className="absolute top-0 left-0 md:top-4 md:left-6"
+				>
 					<MaximizeIcon className="size-7" />
 				</HudButton>
 				<HudPageButtons onChangePage={onChangePage} />
