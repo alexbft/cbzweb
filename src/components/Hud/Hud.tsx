@@ -9,8 +9,8 @@ export function Hud({ hidden, children }: HudProps) {
 	return (
 		<div
 			className={cn(
-				"fixed top-0 left-0 w-full h-full z-[1] pointer-events-none *:pointer-events-auto transition-transform duration-500 touch-none",
-				hidden && "transform -translate-y-80",
+				"pointer-events-none fixed top-0 left-0 z-[1] h-full w-full transition-transform duration-500 *:pointer-events-auto",
+				hidden && "-translate-y-80 transform",
 			)}
 		>
 			{children}
