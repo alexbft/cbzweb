@@ -71,7 +71,7 @@ export function EpubViewer({
 
 	return (
 		<CurrentBookConfigProvider idbKey={lastPageIndexKey}>
-			<div className="h-full grid place-items-center">
+			<div className="grid h-full place-items-center">
 				<Hud hidden={hudHidden}>
 					<Sheet modal={false} open={sidebarOpen} onOpenChange={setSidebarOpen}>
 						<SheetTrigger asChild>
@@ -79,7 +79,7 @@ export function EpubViewer({
 						</SheetTrigger>
 						<SheetContent
 							side="left"
-							className="min-w-[360px] max-w-full sm:max-w-full bg-white/80 dark:bg-black/80 dark:text-white"
+							className="min-w-[360px] max-w-full bg-white/80 sm:max-w-full dark:bg-black/80 dark:text-white"
 							aria-describedby={undefined}
 							overlay={<div className="fixed inset-0" />}
 						>
@@ -110,7 +110,7 @@ export function EpubViewer({
 						onToggleFullscreen={toggleFullScreen}
 					/>
 				) : (
-					<div className="h-full aspect-[3/4] max-w-full">
+					<div className="aspect-[3/4] h-full max-w-full">
 						<div className="p-4">Loading...</div>
 					</div>
 				)}

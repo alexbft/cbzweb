@@ -1,7 +1,7 @@
 import { MenuIcon } from "lucide-react";
 import { HudButton } from "../Hud/HudButton";
 
-export function HudMenuButton({ onClick }: { onClick: () => void }) {
+export function HudMenuButton({ onClick }: { onClick?: () => void }) {
 	return (
 		<HudButton
 			onClick={onClick}
