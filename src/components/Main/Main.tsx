@@ -14,7 +14,7 @@ export function Main() {
 	};
 
 	return (
-		<main className="h-screen bg-bg-light text-fg-light dark:bg-bg-dark dark:text-gray-50">
+		<main className="h-screen touch-manipulation bg-bg-light text-fg-light dark:bg-bg-dark dark:text-gray-50">
 			{file ? (
 				<Viewer file={file} onClose={handleClose} />
 			) : (

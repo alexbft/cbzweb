@@ -181,7 +181,7 @@ export function PageView({
 			className="h-screen"
 			onWheelCapture={(e) => handleWheel(e.nativeEvent)}
 		>
-			<Hud>
+			{/* <Hud>
 				<HudCloseButton onClick={onClose} />
 				<HudButton
 					onClick={toggleFullScreen}
@@ -190,33 +190,34 @@ export function PageView({
 					<MaximizeIcon className="size-7" />
 				</HudButton>
 				<HudPageButtons onChangePage={onChangePage} />
-			</Hud>
-			{imageUrl ? (
-				<TransformWrapper
-					ref={transformWrapperRef}
-					wheel={{ smoothStep: 0.02, wheelDisabled: true }}
-					panning={{ wheelPanning: shouldAllowPointerEvents }}
-					disablePadding={true}
-					centerOnInit={true}
-					doubleClick={{ mode: "toggle" }}
-				>
-					<TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-						<img
-							ref={imageRef}
-							src={imageUrl}
-							alt={pageName ?? ""}
-							className="object-contain portrait:h-auto portrait:w-screen landscape:h-screen landscape:w-auto"
-						/>
-					</TransformComponent>
-				</TransformWrapper>
-			) : (
-				<div
-					className="size-full p-8 text-center"
-					onWheel={(e) => handleWheel(e.nativeEvent)}
-				>
-					Loading page {pageIndex}...
-				</div>
-			)}
+			</Hud> */}
+			<div className="size-full" onTouchStart={() => console.log("touch")}>
+				{imageUrl ? (
+					<TransformWrapper
+						ref={transformWrapperRef}
+						wheel={{ smoothStep: 0.02, wheelDisabled: true }}
+						panning={{ wheelPanning: shouldAllowPointerEvents }}
+						disablePadding={true}
+						centerOnInit={true}
+						doubleClick={{ mode: "toggle" }}
+					>
+						<TransformComponent
+							wrapperStyle={{ width: "100%", height: "100%" }}
+						>
+							<img
+								ref={imageRef}
+								src={imageUrl}
+								alt={pageName ?? ""}
+								className="object-contain portrait:h-auto portrait:w-screen landscape:h-screen landscape:w-auto"
+							/>
+						</TransformComponent>
+					</TransformWrapper>
+				) : (
+					<div className="size-full p-8 text-center">
+						Loading page {pageIndex}...
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
