@@ -20,7 +20,7 @@ export const HudButton = forwardRef<HTMLButtonElement, HudButtonProps>(
 			<Button
 				ref={buttonRef}
 				className={cn(
-					"group size-16 rounded-full text-gray-600 hover:bg-black/30 hover:text-black dark:text-gray-400 dark:hover:text-white",
+					"group size-16 rounded-full text-gray-600 hover:bg-black/30 hover:text-black focus-visible:ring-opacity-20 dark:text-gray-400 dark:hover:text-white",
 					className,
 				)}
 				variant="ghost"

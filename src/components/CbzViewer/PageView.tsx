@@ -74,7 +74,7 @@ export function PageView({
 
 		const state = transformWrapper.instance.transformState;
 		const maxPositionX = transformWrapper.instance.bounds?.maxPositionX ?? 0;
-		transformWrapper.setTransform(maxPositionX, 0, state.scale);
+		transformWrapper.setTransform(maxPositionX, 0, state.scale, 100);
 	}, [imageUrl]);
 
 	const scrollDownOrNextPage = useCallback(() => {
@@ -84,7 +84,6 @@ export function PageView({
 		}
 		const state = transformWrapper.instance.transformState;
 		const minPositionY = transformWrapper.instance.bounds?.minPositionY ?? 0;
-		console.log(state.positionY, minPositionY);
 		if (state.positionY > minPositionY) {
 			transformWrapper.setTransform(
 				state.positionX,
@@ -109,14 +108,20 @@ export function PageView({
 			if (e.altKey || e.ctrlKey || e.metaKey) {
 				return;
 			}
-			if (
-				!e.shiftKey &&
-				e.deltaMode === WheelEvent.DOM_DELTA_PIXEL &&
-				Math.abs(e.deltaY) < 100
-			) {
+			// biome-ignore lint/suspicious/noExplicitAny: this non-standard property is used to detect mouse/trackpad
+			const wheelDeltaY = (e as any).wheelDeltaY;
+			const isTrackpad = wheelDeltaY === -3 * e.deltaY;
+			if (!e.shiftKey && isTrackpad) {
 				return;
 			}
-			onChangePage(e.deltaY > 0 ? 1 : -1);
+			const currentScale =
+				transformWrapperRef.current?.instance.transformState.scale ?? 1;
+			if (currentScale !== 1) {
+				return;
+			}
+			const direction = e.deltaY > 0 ? 1 : -1;
+			e.stopPropagation();
+			onChangePage(direction);
 			if (e.shiftKey) {
 				allowScrollRef.current = false;
 				setTimeout(() => {
@@ -154,8 +159,6 @@ export function PageView({
 					e.preventDefault();
 					onClose();
 					break;
-				default:
-					console.log(e.key);
 			}
 		}
 
