@@ -1,7 +1,7 @@
 import type { PageLoader } from "@/helpers/PageLoader";
 import { useFullScreen } from "@/hooks/useFullScreen";
 import { MaximizeIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type ReactZoomPanPinchRef,
 	TransformComponent,
@@ -171,11 +171,6 @@ export function PageView({
 		};
 	}, [onChangePage, onClose, scrollDownOrNextPage]);
 
-	const shouldAllowPointerEvents = useMemo(
-		() => window.matchMedia("(hover)").matches,
-		[],
-	);
-
 	return (
 		<div
 			className="h-screen"
@@ -191,12 +186,12 @@ export function PageView({
 				</HudButton>
 				<HudPageButtons onChangePage={onChangePage} />
 			</Hud>
-			<div className="size-full" onTouchStart={() => console.log("touch")}>
+			<div className="size-full">
 				{imageUrl ? (
 					<TransformWrapper
 						ref={transformWrapperRef}
 						wheel={{ smoothStep: 0.02, wheelDisabled: true }}
-						panning={{ wheelPanning: shouldAllowPointerEvents }}
+						panning={{ wheelPanning: true }}
 						disablePadding={true}
 						centerOnInit={true}
 						doubleClick={{ mode: "toggle" }}
