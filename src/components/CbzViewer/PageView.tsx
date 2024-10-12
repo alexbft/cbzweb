@@ -188,6 +188,7 @@ export function PageView({
 					panning={{ wheelPanning: true }}
 					disablePadding={true}
 					centerOnInit={true}
+					doubleClick={{ mode: "toggle" }}
 				>
 					<TransformComponent wrapperClass="size-full">
 						<img
