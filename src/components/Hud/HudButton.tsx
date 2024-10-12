@@ -30,7 +30,7 @@ export const HudButton = forwardRef<HTMLButtonElement, HudButtonProps>(
 				}}
 				{...props}
 			>
-				<div className="">{children}</div>
+				{children}
 			</Button>
 		);
 	},
