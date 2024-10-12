@@ -73,8 +73,10 @@ export function PageView({
 		}
 
 		const state = transformWrapper.instance.transformState;
-		const maxPositionX = transformWrapper.instance.bounds?.maxPositionX ?? 0;
-		transformWrapper.setTransform(maxPositionX, 0, state.scale, 100);
+		const bounds = transformWrapper.instance.bounds;
+		const maxPositionX = bounds?.maxPositionX ?? 0;
+		const maxPositionY = bounds?.maxPositionY ?? 0;
+		transformWrapper.setTransform(maxPositionX, maxPositionY, state.scale, 100);
 	}, [imageUrl]);
 
 	const scrollDownOrNextPage = useCallback(() => {
