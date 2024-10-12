@@ -105,24 +105,24 @@ export function PageView({
 			if (!allowScrollRef.current) {
 				return;
 			}
-			if (e.altKey || e.ctrlKey || e.metaKey) {
+			if (e.shiftKey || e.ctrlKey || e.metaKey) {
 				return;
 			}
 			// biome-ignore lint/suspicious/noExplicitAny: this non-standard property is used to detect mouse/trackpad
-			const wheelDeltaY = (e as any).wheelDeltaY;
-			const isTrackpad = wheelDeltaY === -3 * e.deltaY;
-			if (!e.shiftKey && isTrackpad) {
+			const wheelDeltaY = (e as any).wheelDeltaY as number | undefined;
+			const isTrackpad = detectTrackpad(e.deltaY, wheelDeltaY);
+			if (!e.altKey && isTrackpad) {
 				return;
 			}
 			const currentScale =
 				transformWrapperRef.current?.instance.transformState.scale ?? 1;
-			if (currentScale !== 1) {
+			if (!e.altKey && currentScale !== 1) {
 				return;
 			}
 			const direction = e.deltaY > 0 ? 1 : -1;
 			e.stopPropagation();
 			onChangePage(direction);
-			if (e.shiftKey) {
+			if (e.altKey) {
 				allowScrollRef.current = false;
 				setTimeout(() => {
 					allowScrollRef.current = true;
@@ -208,4 +208,15 @@ export function PageView({
 			)}
 		</div>
 	);
+}
+
+function detectTrackpad(deltaY: number, wheelDeltaY: number | undefined) {
+	if (wheelDeltaY === undefined) {
+		return false;
+	}
+	if (deltaY === 0) {
+		return true;
+	}
+	const diff = -3 * deltaY - wheelDeltaY;
+	return Math.abs(diff / deltaY) < 0.1;
 }
