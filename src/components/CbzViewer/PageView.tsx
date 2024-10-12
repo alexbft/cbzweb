@@ -181,7 +181,7 @@ export function PageView({
 			className="h-screen"
 			onWheelCapture={(e) => handleWheel(e.nativeEvent)}
 		>
-			{/* <Hud>
+			<Hud>
 				<HudCloseButton onClick={onClose} />
 				<HudButton
 					onClick={toggleFullScreen}
@@ -190,7 +190,7 @@ export function PageView({
 					<MaximizeIcon className="size-7" />
 				</HudButton>
 				<HudPageButtons onChangePage={onChangePage} />
-			</Hud> */}
+			</Hud>
 			<div className="size-full" onTouchStart={() => console.log("touch")}>
 				{imageUrl ? (
 					<TransformWrapper
