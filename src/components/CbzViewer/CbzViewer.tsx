@@ -55,12 +55,18 @@ export function CbzViewer({
 			switch (e.key) {
 				case "PageUp":
 				case "W":
+				case "w":
 				case "A":
+				case "a":
 					e.preventDefault();
 					handlePageChange(-1);
 					break;
 				case "PageDown":
 				case " ":
+				case "S":
+				case "s":
+				case "D":
+				case "d":
 					e.preventDefault();
 					handlePageChange(1);
 					break;
@@ -68,6 +74,8 @@ export function CbzViewer({
 					e.preventDefault();
 					onClose();
 					break;
+				default:
+					console.log(e.key);
 			}
 		}
 

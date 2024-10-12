@@ -5,6 +5,8 @@ import { Hud } from "../Hud/Hud";
 import { HudCloseButton } from "../HudCloseButton/HudCloseButton";
 import { HudPageButtons } from "../HudPageButtons/HudPageButtons";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { HudButton } from "../Hud/HudButton";
+import { ExpandIcon, MaximizeIcon } from "lucide-react";
 
 export function PageView({
 	pageLoader,
@@ -81,6 +83,9 @@ export function PageView({
 		>
 			<Hud>
 				<HudCloseButton onClick={onClose} />
+				<HudButton onClick={toggleFullScreen} className="absolute top-4 left-6">
+					<MaximizeIcon className="size-7" />
+				</HudButton>
 				<HudPageButtons onChangePage={onChangePage} />
 			</Hud>
 			{pageInfo ? (
