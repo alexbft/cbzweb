@@ -3,43 +3,62 @@ import { useEffect, useMemo, useState } from "react";
 import { CbzViewer } from "../CbzViewer/CbzViewer";
 import { EpubViewer } from "../EpubViewer/EpubViewer";
 
-export function Viewer({ file, onClose }: { file: File, onClose: () => void }) {
-  const [zip, setZip] = useState<JSZip | null>(null);
+export function Viewer({ file, onClose }: { file: File; onClose: () => void }) {
+	const [zip, setZip] = useState<JSZip | null>(null);
 
-  useEffect(() => {
-    const openZip = async () => {
-      setZip(null);
-      console.debug("loading zip");
-      const zip = await new JSZip().loadAsync(file);
-      console.debug("loaded zip");
-      setZip(zip);
-    };
+	useEffect(() => {
+		let cancelled = false;
 
-    openZip();
-  }, [file]);
+		const openZip = async () => {
+			await Promise.resolve();
+			if (cancelled) {
+				return;
+			}
+			setZip(null);
+			console.debug("loading zip");
+			const zip = await new JSZip().loadAsync(file);
+			console.debug("loaded zip");
+			if (cancelled) {
+				return;
+			}
+			setZip(zip);
+		};
 
-  const lastPageIndexKey = useMemo(() => ["lastPageIndex", file.name, file.size], [file]);
-  const documentName = file.name.replace(/\.(\w+)$/i, "");
+		openZip();
 
-  if (!zip) {
-    return <div>Loading...</div>;
-  }
+		return () => {
+			cancelled = true;
+		};
+	}, [file]);
 
-  const isEpub = file.name.toLowerCase().endsWith(".epub");
+	const lastPageIndexKey = useMemo(
+		() => ["lastPageIndex", file.name, file.size],
+		[file],
+	);
+	const documentName = file.name.replace(/\.(\w+)$/i, "");
 
-  if (isEpub) {
-    return <EpubViewer
-      lastPageIndexKey={lastPageIndexKey}
-      zip={zip}
-      onClose={onClose} />;
-  }
+	if (!zip) {
+		return <div>Loading...</div>;
+	}
 
-  return (
-    <CbzViewer
-      lastPageIndexKey={lastPageIndexKey}
-      zip={zip}
-      documentName={documentName}
-      onClose={onClose}
-    />
-  );
+	const isEpub = file.name.toLowerCase().endsWith(".epub");
+
+	if (isEpub) {
+		return (
+			<EpubViewer
+				lastPageIndexKey={lastPageIndexKey}
+				zip={zip}
+				onClose={onClose}
+			/>
+		);
+	}
+
+	return (
+		<CbzViewer
+			lastPageIndexKey={lastPageIndexKey}
+			zip={zip}
+			documentName={documentName}
+			onClose={onClose}
+		/>
+	);
 }
