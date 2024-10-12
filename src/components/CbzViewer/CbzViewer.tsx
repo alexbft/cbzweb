@@ -50,42 +50,6 @@ export function CbzViewer({
 		[pageIndex, pageLoader],
 	);
 
-	useEffect(() => {
-		function handleKeyDown(e: KeyboardEvent) {
-			switch (e.key) {
-				case "PageUp":
-				case "W":
-				case "w":
-				case "A":
-				case "a":
-					e.preventDefault();
-					handlePageChange(-1);
-					break;
-				case "PageDown":
-				case " ":
-				case "S":
-				case "s":
-				case "D":
-				case "d":
-					e.preventDefault();
-					handlePageChange(1);
-					break;
-				case "Escape":
-					e.preventDefault();
-					onClose();
-					break;
-				default:
-					console.log(e.key);
-			}
-		}
-
-		document.addEventListener("keydown", handleKeyDown);
-
-		return () => {
-			document.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [handlePageChange, onClose]);
-
 	return pageIndex !== null ? (
 		<PageView
 			pageLoader={pageLoader}
