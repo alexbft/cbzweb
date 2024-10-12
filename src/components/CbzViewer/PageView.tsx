@@ -1,9 +1,10 @@
 import type { PageInfo, PageLoader } from "@/helpers/PageLoader";
 import { useFullScreen } from "@/hooks/useFullScreen";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Hud } from "../Hud/Hud";
 import { HudCloseButton } from "../HudCloseButton/HudCloseButton";
 import { HudPageButtons } from "../HudPageButtons/HudPageButtons";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 export function PageView({
 	pageLoader,
@@ -42,34 +43,69 @@ export function PageView({
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const imageRef = useRef<HTMLImageElement>(null);
+	const allowScrollRef = useRef(true);
 
 	const toggleFullScreen = useFullScreen();
+
+	const handleWheel = useCallback(
+		(e: WheelEvent) => {
+			if (!allowScrollRef.current) {
+				return;
+			}
+			if (e.altKey || e.ctrlKey || e.metaKey) {
+				return;
+			}
+			if (
+				!e.shiftKey &&
+				e.deltaMode === WheelEvent.DOM_DELTA_PIXEL &&
+				Math.abs(e.deltaY) < 100
+			) {
+				return;
+			}
+			onChangePage(e.deltaY > 0 ? 1 : -1);
+			if (e.shiftKey) {
+				allowScrollRef.current = false;
+				setTimeout(() => {
+					allowScrollRef.current = true;
+				}, 50);
+			}
+		},
+		[onChangePage],
+	);
 
 	return (
 		<div
 			ref={containerRef}
-			className="h-screen grid place-items-center overflow-auto"
-			onWheel={(e) => {
-				if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
-					return;
-				}
-				onChangePage(e.deltaY > 0 ? 1 : -1);
-			}}
+			className="h-screen"
+			onWheelCapture={(e) => handleWheel(e.nativeEvent)}
 		>
 			<Hud>
 				<HudCloseButton onClick={onClose} />
 				<HudPageButtons onChangePage={onChangePage} />
 			</Hud>
 			{pageInfo ? (
-				<img
-					ref={imageRef}
-					className="w-auto min-h-0 h-full object-contain"
-					src={pageInfo.imageUrl}
-					alt={pageInfo.name}
-					onDoubleClick={toggleFullScreen}
-				/>
+				<TransformWrapper
+					wheel={{ smoothStep: 0.02, wheelDisabled: true }}
+					panning={{ wheelPanning: true }}
+					disablePadding={true}
+				>
+					<TransformComponent wrapperClass="size-full" contentClass="size-full">
+						<img
+							ref={imageRef}
+							src={pageInfo.imageUrl}
+							alt={pageInfo.name}
+							className="size-full object-contain"
+							onDoubleClick={toggleFullScreen}
+						/>
+					</TransformComponent>
+				</TransformWrapper>
 			) : (
-				<div>Loading page {pageIndex}...</div>
+				<div
+					className="size-full p-8 text-center"
+					onWheel={(e) => handleWheel(e.nativeEvent)}
+				>
+					Loading page {pageIndex}...
+				</div>
 			)}
 		</div>
 	);
