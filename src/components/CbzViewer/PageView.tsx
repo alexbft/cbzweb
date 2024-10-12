@@ -190,7 +190,7 @@ export function PageView({
 					centerOnInit={true}
 					doubleClick={{ mode: "toggle" }}
 				>
-					<TransformComponent wrapperClass="size-full">
+					<TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
 						<img
 							ref={imageRef}
 							src={imageUrl}
