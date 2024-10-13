@@ -191,7 +191,11 @@ export function PageView({
 					<TransformWrapper
 						ref={transformWrapperRef}
 						wheel={{ smoothStep: 0.02, wheelDisabled: true }}
-						panning={{ wheelPanning: true }}
+						panning={{
+							wheelPanning: true,
+							allowRightClickPan: false,
+							allowMiddleClickPan: false,
+						}}
 						disablePadding={true}
 						centerOnInit={true}
 						doubleClick={{ mode: "toggle" }}
@@ -203,7 +207,7 @@ export function PageView({
 								ref={imageRef}
 								src={imageUrl}
 								alt={pageName ?? ""}
-								className="object-contain portrait:h-auto portrait:w-screen landscape:h-screen landscape:w-auto"
+								className="!pointer-events-auto object-contain portrait:h-auto portrait:w-screen landscape:h-screen landscape:w-auto"
 							/>
 						</TransformComponent>
 					</TransformWrapper>
