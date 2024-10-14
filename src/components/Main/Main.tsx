@@ -2,10 +2,11 @@ import { useState } from "react";
 import { FilePicker } from "../FilePicker/FilePicker";
 import { Viewer } from "../Viewer/Viewer";
 import { setDefaultTitle } from "../../helpers/setTitle";
+import type { FileWithHandle } from "browser-fs-access";
 
 export function Main() {
 	const [autoLoadRecent, setAutoLoadRecent] = useState(true);
-	const [file, setFile] = useState<File | null>(null);
+	const [file, setFile] = useState<FileWithHandle | null>(null);
 
 	const handleClose = () => {
 		setAutoLoadRecent(false);

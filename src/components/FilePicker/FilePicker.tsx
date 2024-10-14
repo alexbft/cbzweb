@@ -1,77 +1,101 @@
-import { fileOpen, supported } from "browser-fs-access";
-import { get, set } from "idb-keyval";
-import { useCallback, useEffect, useState } from "react";
+import { fileOpen, type FileWithHandle, supported } from "browser-fs-access";
+import { get } from "idb-keyval";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
+import { getHistory } from "./getHistory";
 
-export function FilePicker({ autoLoadRecent, onFileChange }: {
-  autoLoadRecent: boolean;
-  onFileChange: (file: File) => void;
+export function FilePicker({
+	autoLoadRecent,
+	onFileChange,
+}: {
+	autoLoadRecent: boolean;
+	onFileChange: (file: FileWithHandle) => void;
 }) {
-  const [lastFileHandle, setLastFileHandle] = useState<FileSystemFileHandle | null>(null);
+	const [history, setHistory] = useState<FileSystemFileHandle[]>([]);
 
-  useEffect(() => {
-    const loadLastFileHandle = async () => {
-      const lastFileHandle = await get<FileSystemFileHandle>('lastFile');
-      if (lastFileHandle && autoLoadRecent) {
-        const havePermission = await lastFileHandle.queryPermission({ mode: 'read' });
-        if (havePermission === 'granted') {
-          const file = await lastFileHandle.getFile();
-          onFileChange(file);
-          return;
-        }
-      }
-      setLastFileHandle(lastFileHandle ?? null);
-    };
+	useEffect(() => {
+		const loadLastFileHandle = async () => {
+			const lastFileHandle = await get<FileSystemFileHandle>("lastFile");
+			if (lastFileHandle) {
+				const havePermission = await lastFileHandle.queryPermission({
+					mode: "read",
+				});
+				if (havePermission === "granted") {
+					const file = await lastFileHandle.getFile();
+					onFileChange(file);
+					return;
+				}
+			}
+		};
 
-    loadLastFileHandle();
-  }, []);
+		const loadHistory = async () => {
+			setHistory(await getHistory());
+		};
 
-  const handleOpenFile = useCallback(async () => {
-    try {
-      const file = await fileOpen({
-        extensions: [".cbz", ".epub"],
-      });
-      if (file?.handle) {
-        set('lastFile', file.handle);
-      }
-      onFileChange(file);
-    } catch (e) {
-      if (!(e instanceof DOMException && e.name === "AbortError")) {
-        throw e;
-      }
-    }
-  }, []);
+		if (autoLoadRecent) {
+			loadLastFileHandle();
+		} else {
+			loadHistory();
+		}
+	}, [autoLoadRecent, onFileChange]);
 
-  const handleOpenLastFile = useCallback(async () => {
-    if (!lastFileHandle) {
-      throw new Error("No last file handle");
-    }
-    if (!supported) {
-      throw new Error("File system access not supported");
-    }
-    const havePermission = await lastFileHandle.queryPermission({ mode: 'read' });
-    if (havePermission !== 'granted') {
-      const newPermission = await lastFileHandle.requestPermission({ mode: 'read' });
-      if (newPermission !== 'granted') {
-        return;
-      }
-    }
-    const file = await lastFileHandle.getFile();
-    onFileChange(file);
-  }, [lastFileHandle]);
+	const handleOpenFile = useCallback(async () => {
+		try {
+			const file = await fileOpen({
+				extensions: [".cbz", ".epub"],
+			});
+			onFileChange(file);
+		} catch (e) {
+			if (!(e instanceof DOMException && e.name === "AbortError")) {
+				throw e;
+			}
+		}
+	}, [onFileChange]);
 
-  return (
-    <main className="max-w-3xl mx-auto flex flex-col gap-4 pt-8">
-      <div>
-        <Button onClick={handleOpenFile}>Open file...</Button>
-      </div>
-      {lastFileHandle && (
-        <div>
-          <Button onClick={handleOpenLastFile}>
-            Open last file: "{lastFileHandle.name}"
-          </Button>
-        </div>
-      )}
-    </main>
-  );
+	const openHistoryEntry = useCallback(
+		async (fileHandle: FileSystemFileHandle) => {
+			if (!supported) {
+				throw new Error("File system access not supported");
+			}
+			const havePermission = await fileHandle.queryPermission({
+				mode: "read",
+			});
+			if (havePermission !== "granted") {
+				const newPermission = await fileHandle.requestPermission({
+					mode: "read",
+				});
+				if (newPermission !== "granted") {
+					return;
+				}
+			}
+			const file = await fileHandle.getFile();
+			const fileWithHandle = file as FileWithHandle;
+			fileWithHandle.handle = fileHandle;
+			onFileChange(fileWithHandle);
+		},
+		[onFileChange],
+	);
+
+	const recentHistory = useMemo(() => history.slice(0, 5), [history]);
+
+	return (
+		<main className="mx-auto flex max-w-3xl flex-col gap-4 pt-8">
+			<div>
+				<Button onClick={handleOpenFile}>Open file...</Button>
+			</div>
+			<ul>
+				{recentHistory.map((fileHandle) => (
+					<li key={fileHandle.name}>
+						<Button
+							variant="link"
+							className="p-0"
+							onClick={() => openHistoryEntry(fileHandle)}
+						>
+							{fileHandle.name}
+						</Button>
+					</li>
+				))}
+			</ul>
+		</main>
+	);
 }

@@ -395,7 +395,7 @@ export function EpubContentView({
 			<iframe
 				title="Epub Content"
 				ref={iframeRef}
-				className="w-full h-full"
+				className="size-full"
 				sandbox="allow-same-origin allow-top-navigation-by-user-activation"
 				src="about:blank"
 			/>

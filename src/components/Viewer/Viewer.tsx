@@ -2,8 +2,13 @@ import JSZip from "jszip";
 import { useEffect, useMemo, useState } from "react";
 import { CbzViewer } from "../CbzViewer/CbzViewer";
 import { EpubViewer } from "../EpubViewer/EpubViewer";
+import type { FileWithHandle } from "browser-fs-access";
+import { updateLastFile } from "../FilePicker/updateLastFile";
 
-export function Viewer({ file, onClose }: { file: File; onClose: () => void }) {
+export function Viewer({
+	file,
+	onClose,
+}: { file: FileWithHandle; onClose: () => void }) {
 	const [zip, setZip] = useState<JSZip | null>(null);
 
 	useEffect(() => {
@@ -22,6 +27,9 @@ export function Viewer({ file, onClose }: { file: File; onClose: () => void }) {
 				return;
 			}
 			setZip(zip);
+			if (file.handle) {
+				updateLastFile(file.handle);
+			}
 		};
 
 		openZip();
