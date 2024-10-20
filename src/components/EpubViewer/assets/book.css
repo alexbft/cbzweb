@@ -1,64 +1,60 @@
 @layer app, user-global, user-local;
 
 @layer app {
-  body {
-    margin: 0;
-    padding: 0;
-  }
+	body {
+		margin: 0;
+		padding: 0;
+	}
 
-  a {
-    color: var(--book-link-color);
-    text-decoration: none;
-  }
+	a {
+		color: var(--book-link-color);
+		text-decoration: none;
+	}
 
-  .dark a {
-    color: var(--book-link-color-dark);
-  }
+	.dark a {
+		color: var(--book-link-color-dark);
+	}
 
-  img,
-  svg {
-    object-fit: contain;
-    max-width: 100% !important;
-    max-height: 100vh !important;
-  }
+	img,
+	svg {
+		object-fit: contain;
+		max-width: 100% !important;
+		max-height: 100vh !important;
+	}
 
-  p {
-    line-height: 1.5;
-  }
+	p {
+		line-height: 1.5;
+	}
 
-  @media (min-width: 832px) {
+	@media (min-width: 832px) {
+		section:has(p),
+		body:has(> p),
+		nav,
+		ol,
+		ul {
+			max-width: 800px;
+			margin-left: auto !important;
+			margin-right: auto !important;
+		}
+	}
 
-    section:has(p),
-    body:has(>p),
-    nav,
-    ol,
-    ul {
-      max-width: 800px;
-      margin-left: auto !important;
-      margin-right: auto !important;
-    }
-  }
+	@media (min-width: 400px) and (max-width: 832px) {
+		section:has(p),
+		body:has(p),
+		nav,
+		ol,
+		ul {
+			padding: 0 16px;
+		}
+	}
 
-  @media (min-width: 400px) and (max-width: 832px) {
-
-    section:has(p),
-    body:has(>p),
-    nav,
-    ol,
-    ul {
-      padding: 0 16px;
-    }
-  }
-
-  @media (max-width: 400px) {
-
-    section:has(p),
-    body:has(>p),
-    nav,
-    ol,
-    ul {
-      padding: 0 8px;
-    }
-  }
-
+	@media (max-width: 400px) {
+		section:has(p),
+		body:has(p),
+		nav,
+		ol,
+		ul {
+			padding: 0 8px;
+		}
+	}
 }
