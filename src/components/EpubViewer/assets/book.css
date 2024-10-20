@@ -28,7 +28,7 @@
 
 	@media (min-width: 832px) {
 		section:has(p),
-		body:has(> p),
+		body:has(p),
 		nav,
 		ol,
 		ul {
